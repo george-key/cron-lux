@@ -304,7 +304,7 @@ namespace Neo.Lux.Core
 
         public Storage GetStorage(NEP5 token)
         {
-            return GetStorage(token.scriptHash);
+            return GetStorage(token.ScriptHash);
         }
 
         public IEnumerable<Notification> GetNotifications(UInt256 hash)
@@ -391,7 +391,7 @@ namespace Neo.Lux.Core
 
                                 foreach (var output in tx.outputs)
                                 {
-                                    if (output.scriptHash == token.scriptHash)
+                                    if (output.scriptHash == token.ScriptHash)
                                     {
                                         MergeTransaction(api, tx);
                                         snapCount++;
@@ -422,7 +422,7 @@ namespace Neo.Lux.Core
                                     {
                                         var scriptHash = new UInt160(op.data);
 
-                                        if (scriptHash == token.scriptHash)
+                                        if (scriptHash == token.ScriptHash)
                                         {
                                             MergeTransaction(api, tx);
                                             snapCount++;
@@ -539,7 +539,7 @@ namespace Neo.Lux.Core
             }
 
             var script_hash = token_script.ToScriptHash();
-            if (script_hash != token.scriptHash)
+            if (script_hash != token.ScriptHash)
             {
                 throw new Exception("Invalid script code, does not match the token scripthash");
             }
@@ -585,7 +585,7 @@ namespace Neo.Lux.Core
                                     {
                                         var scriptHash = new UInt160(op.data);
 
-                                        if (scriptHash != token.scriptHash)
+                                        if (scriptHash != token.ScriptHash)
                                         {
                                             continue;
                                         }
