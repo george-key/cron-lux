@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.IO.Compression;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace NeoBlocks
 {
@@ -44,7 +45,7 @@ namespace NeoBlocks
         }
 
 
-        static void ExportBlocks(int chunk, uint block, List<string> lines)
+        static void ExportBlocks(uint chunk, uint block, List<string> lines)
         {
             byte[] txData;
 
@@ -88,7 +89,7 @@ namespace NeoBlocks
             lines.Clear();
         }
 
-        static uint LoadChunk(string fileName)
+        static List<Block> LoadChunk(string fileName)
         {
             var bytes = File.ReadAllBytes(fileName);
 
@@ -107,6 +108,7 @@ namespace NeoBlocks
             }
 
             uint currentBlock = 0;
+            var blocks = new List<Block>();
             using (var stream = new MemoryStream(txdata))
             {
                 using (var reader = new BinaryReader(stream))
@@ -118,26 +120,70 @@ namespace NeoBlocks
                         var blockData = reader.ReadBytes(len);
 
                         var block = Block.Unserialize(blockData);
+                        blocks.Add(block);
                     }
                 }
             }
 
-            return currentBlock;
+            return blocks;
+        }
+
+        const int chunkSize = 2500;
+
+        static void ExportChunk(uint chunkID, uint maxBlock, NeoAPI api)
+        {
+            var fileName = "chain/chunk" + chunkID;
+            if (File.Exists(fileName))
+            {
+                var blocks = LoadChunk(fileName);
+                if (blocks.Count == chunkSize)
+                {
+                    return;
+                }
+            }
+
+
+            var lines = new List<string>();
+
+            uint startBlock = chunkID * chunkSize;
+            uint endBlock = startBlock + (chunkSize-1);
+            for (uint i=startBlock; i<=endBlock; i++)
+            {
+                if (i > maxBlock)
+                {
+                    break;
+                }
+
+                var response = api.QueryRPC("getblock", new object[] { i });
+                var blockData = response.GetString("result");
+                lines.Add(blockData);                
+            }
+
+            ExportBlocks(chunkID, startBlock, lines);
         }
 
         static void Main(string[] args)
         {
-            var files = Directory.EnumerateFiles("chain").OrderBy(c =>
+
+            var cc = "0040998ee2e92b6da874d1e7c574b63c561fbc5a08fa38b296a59cecabf0237e779274c11894241b8030215c7ef48943ecb999a0bf5fb3143f00e401ac1ff3d42d22".HexToBytes();
+            var inst = Neo.Lux.Debugger.NeoTools.Disassemble(cc);
+            foreach (var entry in inst)
+            {
+                var tt = "";
+
+                if (entry.data != null && entry.data.Length>0) tt = entry.data.ByteToHex();
+
+                Console.WriteLine(entry.opcode + " " + tt);
+            }
+            Console.ReadLine();
+            return;
+
+            /*var files = Directory.EnumerateFiles("chain").OrderBy(c =>
             {
                 var temp = c.Replace("chain\\chunk", "");
                 return int.Parse(temp);
             }).ToList();
 
-            uint startBlock = 0;
-
-            var chunk = 0;
-
-            var startT = Environment.TickCount;
             foreach (var file in files)
             {
                 Console.WriteLine("Loading " + file);
@@ -145,56 +191,46 @@ namespace NeoBlocks
                 chunk++;
             }
 
-            var endT = Environment.TickCount;
-            var delta = (endT - startT) / 1000;
             Console.WriteLine("Finished in "+delta+" seconds");
             Console.ReadLine();
-            return;
+            return;*/
 
-            var lines = new List<string>();
 
             var api = new LocalRPCNode(10332, "http://neoscan.io");
             var blockCount = api.GetBlockHeight();
+            var chunkCount = blockCount / chunkSize;
 
-            BigInteger lastP = 0;
+            var avg = 0;
 
-            for (uint i=0; i<=blockCount; i++)
+            for (uint i=0; i<chunkCount; i++)
             {
-                if (lines.Count == 2500)
-                {
-                    ExportBlocks(chunk, startBlock, lines);
+                var startT = Environment.TickCount;
+                ExportChunk(i, blockCount, api);
+                var endT = Environment.TickCount;
+                var delta = (endT - startT) / 1000;
 
-                    chunk++;
-                    startBlock = i;
+                avg = (delta * 3 + avg) / 4;
+
+                var left = (chunkCount - (i - 1));
+                var estimated_time = left * avg;
+
+                string ss;
+                if (estimated_time < 60)
+                {
+                    ss = estimated_time + "s";
+                }
+                else
+                if (estimated_time < 60*60)
+                {
+                    ss = estimated_time / 60 + "m";
+                }
+                else
+                {
+                    ss = (estimated_time / (60f*60f)).ToString("0.00") + "h";
                 }
 
-                var response = api.QueryRPC("getblock", new object[] { i });
-                var blockData = response.GetString("result");
-                lines.Add(blockData);
-
-                if (i == 2477)
-                {
-                    Console.WriteLine(blockData);
-                }
-
-                BigInteger p = (i * 100) / blockCount;
-                if (p != lastP)
-                {
-                    lastP = p;
-                    Console.WriteLine(p + "%");
-                }
+                Console.WriteLine($"{left} left, {delta}s block time, total estimated time: "+ss);
             }
-
-            ExportBlocks(chunk, startBlock, lines);
-
-            /*
-            var block = GetBlock(api, 2193680);
-
-            Console.WriteLine("Block hash: " + block.Hash.ByteToHex());
-            foreach(var tx in block.transactions)
-            {
-                Console.WriteLine($"{tx.Hash} => {tx.type}");
-            }*/
 
             Console.WriteLine("Finished");
             Console.ReadLine();
