@@ -6,6 +6,7 @@
  */
 
 using Neo.Lux.Core;
+using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace NeoBlocks
 
             var oldBlockCount = api.GetBlockHeight();
 
-            var targetScriptHash = address.AddressToScriptHash();
+            var targetScriptHash = new UInt160(address.AddressToScriptHash());
 
             Console.WriteLine("Now listening for transactions...");
 
@@ -63,7 +64,7 @@ namespace NeoBlocks
 
                         foreach (var output in tx.outputs)
                         {
-                            if (output.scriptHash.SequenceEqual(targetScriptHash))
+                            if (output.scriptHash.Equals(targetScriptHash))
                             {
                                 var asset = NeoAPI.SymbolFromAssetID(output.assetID);
 
