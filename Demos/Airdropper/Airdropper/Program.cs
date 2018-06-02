@@ -9,24 +9,6 @@ using Neo.Lux.Utils;
 
 namespace Neo.Lux.Airdropper
 {
-    class CustomRPCNode: NeoDB
-    {
-        private int n = 0;
-
-        public CustomRPCNode() : base("http://api.wallet.cityofzion.io")
-        {
-            this.rpcEndpoint = null;
-        }
-
-        protected override string GetRPCEndpoint()
-        {
-            n++;
-            var result =  "https://seed"+n+".redpulse.com:10331";
-            if (n > 4) n = 0;
-            return result;
-        }
-    }
-
     class AirDropper
     {
         static void ColorPrint(ConsoleColor color, string text) {
@@ -89,9 +71,7 @@ namespace Neo.Lux.Airdropper
 
             }
 
-            //var api = NeoDB.ForMainNet();            
-            //var api = new LocalRPCNode(10332, "http://neoscan.io");
-            var api = new CustomRPCNode();
+            var api = new LocalRPCNode(10332, "http://neoscan.io");
 
             api.SetLogger(x =>
             {
@@ -185,12 +165,11 @@ namespace Neo.Lux.Airdropper
                     int tryLimit = 3;
                     do
                     {
-                        var result = token.Transfer(keys, address, amount);
+                        tx = token.Transfer(keys, address, amount);
                         Thread.Sleep(1000);
 
-                        if (result != null)
+                        if (tx != null)
                         {
-                            tx = result.transaction;
                             break;
                         }
 
