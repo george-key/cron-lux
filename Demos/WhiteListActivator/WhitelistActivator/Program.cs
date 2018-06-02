@@ -9,24 +9,6 @@ using Neo.Lux.Utils;
 
 namespace Neo.Lux.Airdropper
 {
-    class CustomRPCNode : NeoDB
-    {
-        private int n = 0;
-
-        public CustomRPCNode() : base("http://api.wallet.cityofzion.io")
-        {
-            this.rpcEndpoint = null;
-        }
-
-        protected override string GetRPCEndpoint()
-        {
-            n++;
-            var result = "https://seed" + n + ".redpulse.com:10331";
-            if (n > 4) n = 0;
-            return result;
-        }
-    }
-
     class AirDropper
     {
         static void ColorPrint(ConsoleColor color, string text)
@@ -39,7 +21,7 @@ namespace Neo.Lux.Airdropper
 
         static void Main()
         {
-            string fileName;
+            string fileName = null;
 
             do
             {
@@ -97,7 +79,7 @@ namespace Neo.Lux.Airdropper
             int done = 0;
 
             //var api = NeoDB.ForMainNet();            
-            var api = new LocalRPCNode(10332, "http://neoscan.io");
+            var api = new RemoteRPCNode(10332, "http://neoscan.io");
             //var api = new CustomRPCNode();
 
             api.SetLogger(x =>
@@ -139,9 +121,6 @@ namespace Neo.Lux.Airdropper
 
 
             var token = new NEP5(api, scriptHash);
-
-            var dtx = token.Deploy(keys);
-            Console.WriteLine(dtx.transaction.Hash);
 
             Console.WriteLine($"Starting whitelisting of {token.Name} addresses...");
 
@@ -196,12 +175,11 @@ namespace Neo.Lux.Airdropper
                     int tryLimit = 3;
                     do
                     {
-                        var result = api.CallContract(keys, token.ContractHash, "whitelistAdd", scripts.ToArray());
+                        tx = api.CallContract(keys, token.ScriptHash, "whitelistAdd", scripts.ToArray());
                         Thread.Sleep(1000);
 
-                        if (result != null)
+                        if (tx != null)
                         {
-                            tx = result.transaction;
                             break;
                         }
 
@@ -241,7 +219,7 @@ namespace Neo.Lux.Airdropper
                 done += batch.Count;
                 batch.Clear();
             }
-
+            
             Console.WriteLine($"Activated {done} addresses.");
 
             Console.WriteLine("Finished.");
