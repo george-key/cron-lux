@@ -175,6 +175,61 @@ The following code extracts all transactions related to a specific NEP5 token.
 	}
 	File.AppendAllLines("soul_txs.txt", soul_lines.ToArray());
 ```
+
+# Advanced operations
+
+NEOLux supports some advanced transaction operations specially useful for those doing an ICO in NEO.
+
+## Withdrawing NEO from an ICO contract address
+
+After an ICO finishes, it is necessary to withdraw the received funds outside of the contract address. Now the problem is, for contracts the private key is not known.
+
+```c#            
+// first read the AVM bytecode from the disk. This AVM must be exactly the same deployed in the main net
+var bytes = System.IO.File.ReadAllBytes(@"d:\code\crypto\my_ico\MyICOContract.avm");
+
+// the team keys must match what is written in the contract. Usually only a single address will have withdraw permissions
+var team_keys = Neo.Lux.Cryptography.KeyPair.FromWIF("XXXXXXXXXXXXXX");
+
+var ICO_address = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852"; // this should be the contract address, the one where the sale funds are stored
+
+// finally, execute the withdraw. It is recommended to first try withdrawing a small amount and check if the transaction gets accepted
+var amount = 50;
+var tx = api.WithdrawAsset(team_keys, ICO_address, "NEO", amount, bytes);
+if (tx != null){
+	Console.WriteLine("Unconfirmed tx " + txw.Hash);
+}
+else {
+	Console.WriteLine("Sorry, transaction failed");
+}
+```
+
+## Claiming GAS from an ICO contract address
+
+After an ICO finishes, if the sale received tons of NEO but you don't withdraw it right away, then the address will have a large amount of unclaimed GAS.
+With NEOLux it is possible to claim it, and later send it to another address using the withdraw method.
+
+```c#            
+// first read the AVM bytecode from the disk. This AVM must be exactly the same deployed in the main net
+var bytes = System.IO.File.ReadAllBytes(@"d:\code\crypto\my_ico\MyICOContract.avm");
+
+// the team keys must match what is written in the contract. Usually only a single address will have withdraw permissions
+var team_keys = Neo.Lux.Cryptography.KeyPair.FromWIF("XXXXXXXXXXXXXX");
+
+var ICO_address = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852"; // this should be the contract address, the one where the sale funds are stored
+
+// execute the claim. Note that this operation is quite slow and can take several seconds to execute the transaction
+var amount = 50;
+var tx = api.ClaimGas(team_keys, ICO_address, bytes);
+if (tx != null){
+	Console.WriteLine("Unconfirmed tx " + txw.Hash);
+}
+else {
+	Console.WriteLine("Sorry, transaction failed");
+}
+```
+
+After the GAS is claimed it is available and you can use api.WithdrawAsset() to move it to other address.
 			
 ## Using with Unity
 
