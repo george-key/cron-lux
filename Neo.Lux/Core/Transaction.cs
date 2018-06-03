@@ -1,6 +1,7 @@
 ﻿using Neo.Lux.Cryptography;
 using Neo.Lux.Cryptography.ECC;
 using Neo.Lux.Utils;
+using Neo.Lux.VM;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -320,8 +321,8 @@ namespace Neo.Lux.Core
                 var pubkey = key.PublicKey;
                 var signature = CryptoUtils.Sign(txdata, privkey, pubkey);
 
-                var invocationScript = ("40" + signature.ByteToHex()).HexToBytes();
-                var verificationScript = key.signatureScript.HexToBytes();
+                var invocationScript = new byte[] { (byte)OpCode.PUSHBYTES64 }.Concat(signature).ToArray();
+                var verificationScript = key.signatureScript;
                 witList.Add(new Witness() { invocationScript = invocationScript, verificationScript = verificationScript });
             }
 

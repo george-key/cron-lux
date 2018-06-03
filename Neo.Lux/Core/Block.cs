@@ -64,7 +64,15 @@ namespace Neo.Lux.Core
                     writer.Write((UInt64)ConsensusData);
                     writer.Write(Validator!=null ? Validator.ToArray(): new byte[20]);
                     writer.Write((byte)1);
-                    witness.Serialize(writer);
+                    if (witness != null)
+                    {
+                        witness.Serialize(writer);
+                    }
+                    else
+                    {
+                        writer.WriteVarBytes(null);
+                        writer.WriteVarBytes(null);
+                    }
                     writer.WriteVarInt(transactions.Length);
                     foreach (var tx in transactions)
                     {

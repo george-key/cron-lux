@@ -1,5 +1,7 @@
-﻿using Neo.Lux.Cryptography.ECC;
+﻿using Neo.Lux.Core;
+using Neo.Lux.Cryptography.ECC;
 using Neo.Lux.Utils;
+using Neo.Lux.VM;
 using System;
 using System.Linq;
 //using System.Security.Cryptography; // for RNGCryptoServiceProvider
@@ -16,7 +18,7 @@ namespace Neo.Lux.Cryptography
         public readonly string WIF;
 
         public readonly UInt160 signatureHash;
-        public readonly string signatureScript;
+        public readonly byte[] signatureScript;
 
         public KeyPair(byte[] privateKey)
         {
@@ -42,7 +44,7 @@ namespace Neo.Lux.Cryptography
             this.PublicKeyHash = CryptoUtils.ToScriptHash(bytes);
 
             this.signatureScript = CreateSignatureScript(bytes);
-            signatureHash = CryptoUtils.ToScriptHash(signatureScript.HexToBytes());
+            signatureHash = CryptoUtils.ToScriptHash(signatureScript);
 
             this.PublicKey = pKey.EncodePoint(false).Skip(1).ToArray();
 
@@ -74,9 +76,15 @@ namespace Neo.Lux.Cryptography
             return new KeyPair(bytes);
         }
 
-        public static string CreateSignatureScript(byte[] bytes)
+        public static byte[] CreateSignatureScript(byte[] bytes)
         {
-            return "21" + bytes.ByteToHex() + "ac";
+            var script = new byte[bytes.Length + 2];
+
+            script[0] = (byte) OpCode.PUSHBYTES33;
+            Array.Copy(bytes, 0, script, 1, bytes.Length);
+            script[script.Length - 1] = (byte) OpCode.CHECKSIG;
+
+            return  script;
         }
       
         private string GetWIF()

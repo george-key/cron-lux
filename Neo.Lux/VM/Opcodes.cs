@@ -1,4 +1,4 @@
-﻿namespace Neo.Lux.Core
+﻿namespace Neo.Lux.VM
 {
     public enum OpCode : byte
     {
