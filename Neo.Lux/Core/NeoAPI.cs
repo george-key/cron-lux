@@ -158,13 +158,25 @@ namespace Neo.Lux.Core
                 AddToken("TNC", "08e8c4400f1af2c20c28e0018f29535eb85d15b6", "Trinity", 8);
                 AddToken("CPX", "45d493a6f73fa5f404244a5fb8472fc014ca5885", "APEX", 8);
                 AddToken("ACAT","7f86d61ff377f1b12e589a5907152b57e2ad9a7a", "ACAT", 8);
-                AddToken("NRV", "a721d5893480260bd28ca1f395f2c465d0b5b1c2", "Narrative", 8);
+                AddToken("NRVE", "a721d5893480260bd28ca1f395f2c465d0b5b1c2", "Narrative", 8);
                 AddToken("THOR","67a5086bac196b67d5fd20745b0dc9db4d2930ed", "Thor", 8);
                 AddToken("RHT", "2328008e6f6c7bd157a342e789389eb034d9cbc4", "HashPuppy", 0);
                 AddToken("IAM", "891daf0e1750a1031ebe23030828ad7781d874d6", "BridgeProtocol", 8);
-                AddToken("SHW", "78e6d16b914fe15bc16150aeb11d0c2a8e532bdd", "Switcheo", 8);
+                AddToken("SWTH", "ab38352559b8b203bde5fddfa0b07d8b2525e132", "Switcheo", 8);
                 AddToken("OBT", "0e86a40588f715fcaf7acd1812d50af478e6e917", "Orbis", 8);
+                AddToken("ONT", "ceab719b8baa2310f232ee0d277c061704541cfb", "Ontology", 8);
                 AddToken("SOUL", "ed07cffad18f1308db51920d99a2af60ac66a7b3", "Phantasma", 8); //OLD 4b4f63919b9ecfd2483f0c72ff46ed31b5bbb7a4
+                AddToken("AVA", "de2ed49b691e76754c20fe619d891b78ef58e537", "Travala", 8);
+                AddToken("EFX", "acbc532904b6b51b5ea6d19b803d78af70e7e6f9", "Effect.AI", 8);
+                AddToken("MCT", "a87cc2a513f5d8b4a42432343687c2127c60bc3f", "Master Contract", 8);
+                AddToken("GDM", "d1e37547d88bc9607ff9d73116ebd9381c156f79", "Guardium", 8);
+                AddToken("PKC", "af7c7328eee5a275a3bcaee2bf0cf662b5e739be", "Pikcio", 8);
+                AddToken("ASA", "a58b56b30425d3d1f8902034996fcac4168ef71d", "Asura", 8);
+                AddToken("LRN", "06fa8be9b6609d963e8fc63977b9f8dc5f10895f", "Loopring", 8);
+                AddToken("TKY", "132947096727c84c7f9e076c90f08fec3bc17f18", "THEKEY", 8);
+                AddToken("NKN", "c36aee199dbba6c3f439983657558cfb67629599", "NKN", 8);
+                AddToken("XQT", "6eca2c4bd2b3ed97b2aa41b26128a40ce2bd8d1a", "Quarteria", 8);
+                AddToken("EDS", "81c089ab996fc89c468a26c0a88d23ae2f34b5c0", "Endorsit Shares", 8);
             }
 
             return _tokenScripts;
