@@ -703,12 +703,60 @@ namespace Neo.Lux.Core
             return ok ? tx : null;
         }
 
+        public Transaction ClaimGas(KeyPair ownerKey)
+        {
+            var targetScriptHash = new UInt160(ownerKey.address.AddressToScriptHash());
+
+            decimal amount;
+            var claimable = GetClaimable(targetScriptHash, out amount);
+
+            var references = new List<Transaction.Input>();
+            foreach (var entry in claimable)
+            {
+                references.Add(new Transaction.Input() { prevHash = entry.hash, prevIndex = entry.index });
+            }
+
+            if (amount <= 0)
+            {
+                throw new ArgumentException("No GAS to claim at this address");
+            }
+
+            List<Transaction.Input> inputs;
+            List<Transaction.Output> outputs;
+            GenerateInputsOutputs(ownerKey, "GAS", null, out inputs, out outputs);
+
+            outputs.Add(
+            new Transaction.Output()
+            {
+                scriptHash = targetScriptHash,
+                assetID = NeoAPI.GetAssetID("GAS"),
+                value = amount
+            });
+
+            Transaction tx = new Transaction()
+            {
+                type = TransactionType.ClaimTransaction,
+                version = 0,
+                script = null,
+                gas = -1,
+                references = references.ToArray(),
+                inputs = inputs.ToArray(),
+                outputs = outputs.ToArray(),
+            };
+
+            tx.Sign(ownerKey);
+
+            var ok = SendTransaction(tx);
+            return ok ? tx : null;
+        }
+
         public Transaction ClaimGas(KeyPair ownerKey, string fromAddress, byte[] verificationScript)
         {
             var fromScriptHash = new UInt160(fromAddress.GetScriptHashFromAddress());
             return ClaimGas(ownerKey, fromScriptHash, verificationScript);
         }
 
+        // claim from contract, without having private key
         public Transaction ClaimGas(KeyPair ownerKey, UInt160 fromScripthash, byte[] verificationScript)
         {
 
