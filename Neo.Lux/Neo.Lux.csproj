@@ -40,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BouncyCastle" Version="1.8.2" />
     <PackageReference Include="LunarParser" Version="1.0.33" />
   </ItemGroup>
 
