@@ -154,6 +154,8 @@ Use caution, as most NEOLux methods are blocking calls; in Unity the proper way 
 	StartCoroutine(SyncBalance());
 ```
 
+Note: If you get compilation errors in Unity uou will need to go to Settings -> Player and change the Scripting Runtime version to .NET 4.6 equivalent
+
 # Airdrop / Snapshots
 
 Latest versions of NEOLux have support for doing snapshots of the blockchain. This can be useful for example to find every wallet with a certain token balance at a certain date.

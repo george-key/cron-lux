@@ -1,16 +1,18 @@
 {
   "GAS": {
-    "balance": 0, 
-    "unspent": []
+    "balance": 3.0, 
+    "unspent": [
+      {
+        "index": 0, 
+        "txid": "98d0b683fdf115ef41de0040f11c1d047252de8d8ad41aad298817a264c4004a", 
+        "value": 3.0
+      }
+    ]
   }, 
   "NEO": {
     "balance": 0, 
     "unspent": []
   }, 
-<<<<<<< HEAD
-  "address": "ARFXDavzvUjvfT9vfeo79mFbyeSux767qu", 
-=======
-  "address": "AcX4K7zyrrjsr7o7gDtf2AYFvBZKtHZykm", 
->>>>>>> 5a1d985bc91919ad432689ab202ac63a728264ff
+  "address": "AH78bx9sfVKR4cPaC527ktaDRjtwKNur8B", 
   "net": "TestNet"
 }
