@@ -235,9 +235,13 @@ After the GAS is claimed it is available and you can use api.WithdrawAsset() to 
 			
 ## Using with Unity
 
-Don't drop the source code of NEOLux inside Unity, it won't work. Instead of the provided .UnityPackage file to install it (or use the included Demo project as a template for your project).
+In order to get the demo running in Unity, you'll want to open Unity and then open a new project. Open the folder located [here](/Demos/NeoUnity). 
 
-If you have weird compilation errors inside Unity, try the project "Api Compatibility Level" to .NET 4.6.
+Next, you'll want to open the Assets menu in your toolbar and import an asset package. This package can be found [here](/Unity/Neo.Lux.0.7.5.unitypackage). 
+
+You should now be able to hit play and see the demo in action! 
+
+If you're still receiving errors in the Console window, you'll want to go to Unity's Build Settings > Player Settings > and set the API compatibility level to .NET 4.6.
 
 ![Inputs Screenshot](images/neo_unity.jpg)
 
