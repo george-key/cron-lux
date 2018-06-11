@@ -66,7 +66,7 @@ namespace Neo.Lux.Cryptography
 
         private static System.Security.Cryptography.RNGCryptoServiceProvider rnd = new System.Security.Cryptography.RNGCryptoServiceProvider();
 
-        public static KeyPair GenerateAddress()
+        public static KeyPair Generate()
         {
             var bytes = new byte[32];
             lock (rnd)
