@@ -156,6 +156,18 @@ Use caution, as most NEOLux methods are blocking calls; in Unity the proper way 
 
 Note: If you get compilation errors in Unity uou will need to go to Settings -> Player and change the Scripting Runtime version to .NET 4.6 equivalent
 
+## Using with Unity
+
+In order to get the demo running in Unity, you'll want to open Unity and then open a new project. Open the folder located [here](/Demos/NeoUnity). 
+
+Next, you'll want to open the Assets menu in your toolbar and import an asset package. This package can be found [here](/Unity/Neo.Lux.0.7.5.unitypackage). 
+
+You should now be able to hit play and see the demo in action! 
+
+If you're still receiving errors in the Console window, you'll want to go to Unity's Build Settings > Player Settings > and set the API compatibility level to .NET 4.6.
+
+![Inputs Screenshot](images/neo_unity.jpg)
+
 # Airdrop / Snapshots
 
 Latest versions of NEOLux have support for doing snapshots of the blockchain. This can be useful for example to find every wallet with a certain token balance at a certain date.
@@ -233,18 +245,6 @@ else {
 
 After the GAS is claimed it is available and you can use api.WithdrawAsset() to move it to other address.
 			
-## Using with Unity
-
-In order to get the demo running in Unity, you'll want to open Unity and then open a new project. Open the folder located [here](/Demos/NeoUnity). 
-
-Next, you'll want to open the Assets menu in your toolbar and import an asset package. This package can be found [here](/Unity/Neo.Lux.0.7.5.unitypackage). 
-
-You should now be able to hit play and see the demo in action! 
-
-If you're still receiving errors in the Console window, you'll want to go to Unity's Build Settings > Player Settings > and set the API compatibility level to .NET 4.6.
-
-![Inputs Screenshot](images/neo_unity.jpg)
-
 # Credits and License
 
 Created by Sérgio Flores (<http://lunarlabs.pt/>).
