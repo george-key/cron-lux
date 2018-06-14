@@ -7,6 +7,5 @@ install:
   - nuget update Neo.Lux.sln
   - nuget install NUnit.Runners -Version 3.2.0 -OutputDirectory testrunner
 script:    
-  - msbuild /t:Restore
   - msbuild /p:Configuration=Release Neo.Lux.sln
   - mono ./testrunner/NUnit.ConsoleRunner.3.2.0/tools/nunit3-console.exe ./Neo.Lux.Tests/bin/Release/Neo.Lux.Tests.dll  

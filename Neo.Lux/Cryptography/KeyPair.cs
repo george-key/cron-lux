@@ -1,10 +1,8 @@
-﻿using Neo.Lux.Core;
-using Neo.Lux.Cryptography.ECC;
+﻿using Neo.Lux.Cryptography.ECC;
 using Neo.Lux.Utils;
 using Neo.Lux.VM;
 using System;
 using System.Linq;
-//using System.Security.Cryptography; // for RNGCryptoServiceProvider
 
 namespace Neo.Lux.Cryptography
 {
@@ -64,7 +62,7 @@ namespace Neo.Lux.Cryptography
             return new KeyPair(privateKey);
         }
 
-        private static System.Security.Cryptography.RNGCryptoServiceProvider rnd = new System.Security.Cryptography.RNGCryptoServiceProvider();
+        private static System.Security.Cryptography.RandomNumberGenerator rnd = System.Security.Cryptography.RandomNumberGenerator.Create();
 
         public static KeyPair Generate()
         {
