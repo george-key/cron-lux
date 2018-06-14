@@ -1,9 +1,12 @@
 language: csharp
 sudo: required
+mono: 5.2.0
 dotnet: 2.0.0
 dist: trusty
 install:
+  - ls $(dirname $(which mono))/../lib/mono/4.6.1/
+  - export FrameworkPathOverride=$(dirname $(which mono))/../lib/mono/4.6.1/
   - dotnet restore
 script: 
-  - dotnet build -f netstandard2.0
+  - dotnet build
   - dotnet test
