@@ -301,56 +301,6 @@ namespace Neo.Lux.Utils
             return sb.ToString();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static int ToInt32(this byte[] value, int startIndex)
-        {
-            fixed (byte* pbyte = &value[startIndex])
-            {
-                return *((int*)pbyte);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static long ToInt64(this byte[] value, int startIndex)
-        {
-            fixed (byte* pbyte = &value[startIndex])
-            {
-                return *((long*)pbyte);
-            }
-        }
-
-        public static uint ToTimestamp(this DateTime time)
-        {
-            return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static ushort ToUInt16(this byte[] value, int startIndex)
-        {
-            fixed (byte* pbyte = &value[startIndex])
-            {
-                return *((ushort*)pbyte);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static uint ToUInt32(this byte[] value, int startIndex)
-        {
-            fixed (byte* pbyte = &value[startIndex])
-            {
-                return *((uint*)pbyte);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static ulong ToUInt64(this byte[] value, int startIndex)
-        {
-            fixed (byte* pbyte = &value[startIndex])
-            {
-                return *((ulong*)pbyte);
-            }
-        }
-
         internal static long WeightedAverage<T>(this IEnumerable<T> source, Func<T, long> valueSelector, Func<T, long> weightSelector)
         {
             long sum_weight = 0;
@@ -448,6 +398,11 @@ namespace Neo.Lux.Utils
                 }
                 yield return resultSelector(item, weight);
             }
+        }
+
+        public static uint ToTimestamp(this DateTime time)
+        {
+            return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
         }
 
 
