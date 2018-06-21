@@ -36,6 +36,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+ 
+  <ItemGroup>
+    <Compile Remove="Cryptography\MerkleTree.cs" />
+    <Compile Remove="Cryptography\MerkleTreeNode.cs" />
+    <Compile Remove="Cryptography\Murmur3.cs" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="BouncyCastle" Version="1.8.2" />

@@ -1,13 +1,13 @@
 ﻿using Neo.Lux.Cryptography;
 using Neo.Lux.Debugger;
 using Neo.Lux.Utils;
-using Neo.Lux.VM;
+using Neo.Lux.Core;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Neo.Lux.Core
+namespace Neo.Lux.VM
 {
     public interface IBlockchainProvider
     {
