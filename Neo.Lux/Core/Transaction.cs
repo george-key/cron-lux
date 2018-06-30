@@ -403,6 +403,19 @@ namespace Neo.Lux.Core
                         break;
                     }
 
+                case TransactionType.StateTransaction:
+                    {
+                        int descCount = (int)reader.ReadVarInt(16);
+                        for (int i=0; i<descCount; i++)
+                        {
+                            var Type = /*(StateType)*/reader.ReadByte();
+                            var Key = reader.ReadVarBytes(100);
+                            var Field = reader.ReadVarString();
+                            var Value = reader.ReadVarBytes(65535);
+                        }
+                        break;
+                    }
+
                 case TransactionType.PublishTransaction:
                     {
                         tx.contractRegistration = Contract.Unserialize(reader, tx.version);
