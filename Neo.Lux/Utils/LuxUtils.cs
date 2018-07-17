@@ -54,7 +54,7 @@ namespace Neo.Lux.Utils
             return result;
         }
 
-        public static string ReverseHex(string hex)
+        public static string ReverseHex(this string hex)
         {
 
             string result = "";

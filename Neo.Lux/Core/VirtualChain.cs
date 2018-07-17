@@ -68,21 +68,40 @@ namespace Neo.Lux.Core
         }
 
         private Dictionary<UInt160, UInt160> _witnessMap = new Dictionary<UInt160, UInt160>();
+        private Dictionary<UInt160, UInt160> _scriptMap = new Dictionary<UInt160, UInt160>();
 
         public void BypassKey(UInt160 src, UInt160 dest)
         {
+            Logger($"Mapping witness {src} to use {dest} instead");
             _witnessMap[dest] = src;
         }
 
+        public void BypassScript(UInt160 src, UInt160 dest)
+        {
+            Logger($"Mapping script {src} to use {dest} instead");
+            _scriptMap[src] = dest;
+        }
 
         protected override bool ValidateWitness(UInt160 a, UInt160 b)
         {
             if (_witnessMap.ContainsKey(a) && _witnessMap[a] == b){
-                Logger("Bypassed check via " + a.ToAddress());
+                Logger($"Bypassed witness {a}, using {b} instead");
                 return true;
             }
 
             return base.ValidateWitness(a, b);
+        }
+
+        public override byte[] GetScript(byte[] script_hash)
+        {
+            var hash = new UInt160(script_hash);
+            if (_scriptMap.ContainsKey(hash))
+            {
+                var target = _scriptMap[hash];
+                Logger($"Bypassed script {hash}, using {target} instead");
+                script_hash = target.ToArray();
+            }
+            return base.GetScript(script_hash);
         }
 
         protected override uint GetTime()

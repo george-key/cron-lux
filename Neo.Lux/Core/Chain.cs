@@ -329,7 +329,7 @@ namespace Neo.Lux.Core
             return null;
         }
 
-        public byte[] GetScript(byte[] script_hash)
+        public virtual byte[] GetScript(byte[] script_hash)
         {
             var hash = new UInt160(script_hash);
 
