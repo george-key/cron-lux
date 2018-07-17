@@ -1,20 +1,15 @@
 ﻿using Neo.Lux.Cryptography;
 using Neo.Lux.Debugger;
 using Neo.Lux.Utils;
-using Neo.Lux.Core;
+using Neo.Lux.VM;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Neo.Lux.VM
+namespace Neo.Lux.Core
 {
-    public interface IBlockchainProvider
-    {
-        Transaction GetTransaction(UInt256 hash);
-    }
-
-    public class SnapshotVM : InteropService, IScriptTable
+    public class ListenerVM : InteropService, IScriptTable
     {
         private Dictionary<UInt160, byte[]> scripts = new Dictionary<UInt160, byte[]>();
         private Dictionary<UInt160, Storage> storage = new Dictionary<UInt160, Storage>();
@@ -24,18 +19,11 @@ namespace Neo.Lux.VM
 
         private IBlockchainProvider provider;
 
-        public SnapshotVM(IBlockchainProvider provider)
+        public ListenerVM(IBlockchainProvider provider)
         {
             this.provider = provider;
 
-            Register("Neo.Transaction.GetReferences", Transaction_GetReferences, 0.2m);
-            Register("Neo.Transaction.GetOutputs", Transaction_GetOutputs, defaultGasCost);
-            Register("Neo.Transaction.GetInputs", Transaction_GetInputs, defaultGasCost);
-            Register("Neo.Transaction.GetHash", engine => { var tx = GetInteropFromStack<Transaction>(engine); if (tx == null) return false; engine.EvaluationStack.Push(tx.Hash.ToArray()); return true; }, defaultGasCost);
-
-            Register("Neo.Output.GetScriptHash", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.EvaluationStack.Push(output.scriptHash.ToArray()); return true; }, defaultGasCost);
-            Register("Neo.Output.GetValue", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.EvaluationStack.Push(output.value.ToBigInteger()); return true; }, defaultGasCost);
-            Register("Neo.Output.GetAssetId", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.EvaluationStack.Push(output.assetID); return true; }, defaultGasCost);
+            VMAPI.RegisterAPI(provider, this);
 
             Register("Neo.Storage.GetContext", engine => { var hash = engine.CurrentContext.ScriptHash; engine.EvaluationStack.Push((new VM.Types.InteropInterface(storage[hash]))); return true; }, defaultGasCost);
             Register("Neo.Storage.Get", Storage_Get, 0.1m);
@@ -44,31 +32,13 @@ namespace Neo.Lux.VM
 
             Register("Neo.Runtime.GetTime", engine => { engine.EvaluationStack.Push(currentBlock.Date.ToTimestamp()); return true; }, defaultGasCost);
             Register("Neo.Runtime.GetTrigger", engine => { engine.EvaluationStack.Push((int)TriggerType.Application); return true; }, defaultGasCost);
-            Register("Neo.Runtime.CheckWitness", Runtime_CheckWitness, 0.2m);
             //Register("Neo.Runtime.Log", Runtime_Log, defaultGasCost);
             Register("Neo.Runtime.Notify", Runtime_Notify, defaultGasCost);
         }
 
-        private static T GetInteropFromStack<T>(ExecutionEngine engine) where T : class, IInteropInterface
-        {
-            if (engine.EvaluationStack.Count == 0)
-            {
-                return default(T);
-            }
-
-            var obj = engine.EvaluationStack.Pop() as VM.Types.InteropInterface;
-            if (obj == null)
-            {
-                return default(T);
-
-            }
-
-            return obj.GetInterface<T>();
-        }
-
         private bool Storage_Get(ExecutionEngine engine)
         {
-            var storage = GetInteropFromStack<Storage>(engine);
+            var storage = engine.GetInteropFromStack<Storage>();
             var key = engine.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
@@ -87,7 +57,7 @@ namespace Neo.Lux.VM
 
         private bool Storage_Put(ExecutionEngine engine)
         {
-            var storage = GetInteropFromStack<Storage>(engine);
+            var storage = engine.GetInteropFromStack<Storage>();
 
             var key = engine.EvaluationStack.Pop().GetByteArray();
             var val = engine.EvaluationStack.Pop().GetByteArray();
@@ -101,7 +71,7 @@ namespace Neo.Lux.VM
 
         private bool Storage_Delete(ExecutionEngine engine)
         {
-            var storage = GetInteropFromStack<Storage>(engine);
+            var storage = engine.GetInteropFromStack<Storage>();
             var key = engine.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
@@ -113,127 +83,7 @@ namespace Neo.Lux.VM
 
             return true;
         }
-
-        public bool Transaction_GetReferences(ExecutionEngine engine)
-        {
-            var tx = GetInteropFromStack<Transaction>(engine);
-
-            if (tx == null)
-            {
-                return false;
-            }
-
-            var items = new List<StackItem>();
-
-            var references = new List<Transaction.Output>();
-            foreach (var input in tx.inputs)
-            {
-                var other_tx = provider.GetTransaction(input.prevHash);
-                references.Add(other_tx.outputs[input.prevIndex]);
-            }
-
-            foreach (var reference in references)
-            {
-                items.Add(new VM.Types.InteropInterface(reference));
-            }
-
-            var result = new VM.Types.Array(items.ToArray<StackItem>());
-            engine.EvaluationStack.Push(result);
-
-            return true;
-        }
-
-        public bool Transaction_GetOutputs(ExecutionEngine engine)
-        {
-            var tx = GetInteropFromStack<Transaction>(engine);
-
-            if (tx == null)
-            {
-                return false;
-            }
-
-            var items = new List<StackItem>();
-
-            foreach (var output in tx.outputs)
-            {
-                items.Add(new VM.Types.InteropInterface(output));
-            }
-
-            var result = new VM.Types.Array(items.ToArray<StackItem>());
-            engine.EvaluationStack.Push(result);
-
-            return true;
-        }
-
-        public bool Transaction_GetInputs(ExecutionEngine engine)
-        {
-            var tx = GetInteropFromStack<Transaction>(engine);
-
-            if (tx == null)
-            {
-                return false;
-            }
-
-            var items = new List<StackItem>();
-
-            foreach (var input in tx.inputs)
-            {
-                items.Add(new VM.Types.InteropInterface(input));
-            }
-
-            var result = new VM.Types.Array(items.ToArray<StackItem>());
-            engine.EvaluationStack.Push(result);
-
-            return true;
-        }
-
-
-        public bool Runtime_CheckWitness(ExecutionEngine engine)
-        {
-            byte[] hashOrPubkey = engine.EvaluationStack.Pop().GetByteArray();
-
-            bool result;
-
-            var tx = (Transaction)engine.ScriptContainer;
-
-            if (hashOrPubkey.Length == 20) // script hash
-            {
-                var hash = new UInt160(hashOrPubkey);
-
-                var address = hash.ToAddress();
-
-                result = false;
-
-                foreach (var input in tx.inputs)
-                {
-                    var reference = provider.GetTransaction(input.prevHash);
-                    var output = reference.outputs[input.prevIndex];
-                    var other_address = output.scriptHash.ToAddress();
-
-                    if (output.scriptHash.Equals(hash))
-                    {
-                        result = true;
-                        break;
-                    }
-                }
-            }
-            else if (hashOrPubkey.Length == 33) // public key
-            {
-                //hash = ECPoint.DecodePoint(hashOrPubkey, ECCurve.Secp256r1);
-                //result = CheckWitness(engine, Contract.CreateSignatureRedeemScript(pubkey).ToScriptHash());
-                throw new Exception("ECPoint witness");
-            }
-            else
-            {
-                result = false;
-            }
-
-            //DoLog($"Checking Witness [{matchType}]: {FormattingUtils.OutputData(hashOrPubkey, false)} => {result}");
-
-            engine.EvaluationStack.Push(new VM.Types.Boolean(result));
-            return true;
-        }
-
+      
         private bool Runtime_Notify(ExecutionEngine engine)
         {
             var something = engine.EvaluationStack.Pop();
@@ -329,6 +179,25 @@ namespace Neo.Lux.VM
         private Dictionary<UInt256, Block> blocks = new Dictionary<UInt256, Block>();
         private HashSet<UInt256> external_txs = new HashSet<UInt256>();
 
+        public uint GetBlockHeight() {
+            throw new NotImplementedException();
+        }
+
+        public Block GetBlock(UInt256 hash)
+        {
+            return blocks[hash];
+        }
+
+        public Block GetBlock(uint height)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Transaction GetTransaction(UInt256 hash)
+        {
+            return transactions.ContainsKey(hash) ? transactions[hash] : null;
+        }
+
         internal Snapshot(IEnumerable<string> lines)
         {
             foreach (var line in lines)
@@ -362,10 +231,12 @@ namespace Neo.Lux.VM
             }
         }
 
-        public Snapshot(NEP5 token, uint startBlock, uint endBlock = 0)
+        public Snapshot(NEP5 token, uint startBlock, uint endBlock = 0) : this(token.ScriptHash, token.api, startBlock, endBlock)
         {
-            var api = token.api;
+        }
 
+        public Snapshot(UInt160 scriptHash, NeoAPI api, uint startBlock, uint endBlock = 0)
+        {
             if (endBlock == 0)
             {
                 endBlock = api.GetBlockHeight();
@@ -391,7 +262,7 @@ namespace Neo.Lux.VM
 
                                 foreach (var output in tx.outputs)
                                 {
-                                    if (output.scriptHash == token.ScriptHash)
+                                    if (output.scriptHash == scriptHash)
                                     {
                                         MergeTransaction(api, tx);
                                         snapCount++;
@@ -420,9 +291,9 @@ namespace Neo.Lux.VM
 
                                     if (op.opcode == OpCode.APPCALL && op.data != null && op.data.Length == 20)
                                     {
-                                        var scriptHash = new UInt160(op.data);
+                                        var otherScriptHash = new UInt160(op.data);
 
-                                        if (scriptHash == token.ScriptHash)
+                                        if (otherScriptHash == scriptHash)
                                         {
                                             MergeTransaction(api, tx);
                                             snapCount++;
@@ -531,27 +402,17 @@ namespace Neo.Lux.VM
             return FindBlock(api, timestamp, min, max);
         }
 
-        public void Execute(NEP5 token, byte[] token_script, Action<SnapshotVM> visitor)
+        public void Execute(NeoAPI api, UInt160 script_hash, Action<ListenerVM> visitor)
         {
-            if (token_script == null)
-            {
-                throw new Exception("Could not find token script");
-            }
-
-            var script_hash = token_script.ToScriptHash();
-            if (script_hash != token.ScriptHash)
-            {
-                throw new Exception("Invalid script code, does not match the token scripthash");
-            }
-
-            var api = token.api;
             var balances = new Dictionary<UInt160, decimal>();
 
-            var vm = new SnapshotVM(this);
-            vm.AddScript(token_script);
+            var vm = new ListenerVM(this);
+            /*vm.AddScript(token_script);
 
             var debugger = new DebugClient();
             debugger.SendScript(token_script);
+            */
+            throw new NotImplementedException();
 
             IEnumerable<Block> sorted_blocks = blocks.Values.OrderBy(x => x.Date);
 
@@ -583,9 +444,9 @@ namespace Neo.Lux.VM
 
                                     if (op.opcode == OpCode.APPCALL && op.data != null && op.data.Length == 20)
                                     {
-                                        var scriptHash = new UInt160(op.data);
+                                        var otherScriptHash = new UInt160(op.data);
 
-                                        if (scriptHash != token.ScriptHash)
+                                        if (otherScriptHash != script_hash)
                                         {
                                             continue;
                                         }
@@ -596,7 +457,7 @@ namespace Neo.Lux.VM
                                         engine.Execute(
                                             x =>
                                             {
-                                                debugger.Step(x);
+                                                //debugger.Step(x);
                                             }
                                             );
 
@@ -616,9 +477,5 @@ namespace Neo.Lux.VM
             }
         }
 
-        public Transaction GetTransaction(UInt256 hash)
-        {
-            return transactions.ContainsKey(hash) ? transactions[hash] : null;
-        }
     }
 }
