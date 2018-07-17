@@ -79,13 +79,15 @@ namespace Neo.Lux.Core
 
         public override ExecutionContext LoadScript(byte[] script, int rvcount = -1)
         {
-            return base.LoadScript(script, rvcount);
+            var result = base.LoadScript(script, rvcount);
 
             this.Chain.OnLoadScript(this, script);
+
+            return result;
         }
     }
 
-    public class Chain: InteropService, IScriptTable
+    public class Chain: InteropService, IScriptTable, IBlockchainProvider
     {
         protected Dictionary<uint, Block> _blocks = new Dictionary<uint, Block>();
 
@@ -97,7 +99,10 @@ namespace Neo.Lux.Core
         private Dictionary<UInt256, List<Notification>> notifications = new Dictionary<UInt256, List<Notification>>();
 
         private Block lastBlock = null;
-        public uint BlockHeight => lastBlock != null ? lastBlock.Height : 0;
+        public uint GetBlockHeight()
+        {
+            return lastBlock != null ? lastBlock.Height : 0;
+        }
 
         protected Action<string> Logger { get; private set; }
 
@@ -423,16 +428,9 @@ namespace Neo.Lux.Core
 
         private void RegisterVMMethods()
         {
+            VMAPI.RegisterAPI(this, this);
+
             Register("Neo.Contract.Create", Contract_Create, 500);
-
-            Register("Neo.Transaction.GetReferences", Transaction_GetReferences, 0.2m);
-            Register("Neo.Transaction.GetOutputs", Transaction_GetOutputs, defaultGasCost);
-            Register("Neo.Transaction.GetInputs", Transaction_GetInputs, defaultGasCost);
-            Register("Neo.Transaction.GetHash", engine => { var tx = GetInteropFromStack<Transaction>(engine); if (tx == null) return false; engine.CurrentContext.EvaluationStack.Push(tx.Hash.ToArray()); return true; }, defaultGasCost);
-
-            Register("Neo.Output.GetScriptHash", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.CurrentContext.EvaluationStack.Push(output.scriptHash.ToArray()); return true; }, defaultGasCost);
-            Register("Neo.Output.GetValue", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.CurrentContext.EvaluationStack.Push(output.value.ToBigInteger()); return true; }, defaultGasCost);
-            Register("Neo.Output.GetAssetId", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.CurrentContext.EvaluationStack.Push(output.assetID); return true; }, defaultGasCost);
 
             Register("Neo.Storage.GetContext", engine => { var hash = engine.CurrentContext.ScriptHash; var account = GetAccount(hash); engine.CurrentContext.EvaluationStack.Push((new VM.Types.InteropInterface(account.storage))); return true; }, defaultGasCost);
             Register("Neo.Storage.Get", Storage_Get, 0.1m);

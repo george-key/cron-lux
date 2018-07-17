@@ -55,7 +55,7 @@ namespace Neo.Lux.Core
 
         public override uint GetBlockHeight()
         {
-            return Chain.BlockHeight;
+            return Chain.GetBlockHeight();
         }
 
         public override Block GetBlock(UInt256 hash)
