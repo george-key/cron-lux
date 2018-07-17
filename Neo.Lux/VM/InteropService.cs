@@ -57,25 +57,25 @@ namespace Neo.Lux.VM
 
         internal static bool GetScriptContainer(ExecutionEngine engine)
         {
-            engine.EvaluationStack.Push(StackItem.FromInterface(engine.ScriptContainer));
+            engine.CurrentContext.EvaluationStack.Push(StackItem.FromInterface(engine.ScriptContainer));
             return true;
         }
 
         internal static bool GetExecutingScriptHash(ExecutionEngine engine)
         {
-            engine.EvaluationStack.Push(engine.CurrentContext.ScriptHash.ToArray());
+            engine.CurrentContext.EvaluationStack.Push(engine.CurrentContext.ScriptHash.ToArray());
             return true;
         }
 
         internal static bool GetCallingScriptHash(ExecutionEngine engine)
         {
-            engine.EvaluationStack.Push(engine.CallingContext.ScriptHash.ToArray());
+            engine.CurrentContext.EvaluationStack.Push(engine.CallingContext.ScriptHash.ToArray());
             return true;
         }
 
         internal static bool GetEntryScriptHash(ExecutionEngine engine)
         {
-            engine.EvaluationStack.Push(engine.EntryContext.ScriptHash.ToArray());
+            engine.CurrentContext.EvaluationStack.Push(engine.EntryContext.ScriptHash.ToArray());
             return true;
         }
     }

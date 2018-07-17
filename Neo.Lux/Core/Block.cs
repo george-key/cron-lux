@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Neo.Lux.Core
 {
-    public class Block
+    public class Block : IInteropInterface
     {
         public uint Version;
         public uint Height;

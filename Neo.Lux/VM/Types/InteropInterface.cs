@@ -31,6 +31,11 @@ namespace Neo.Lux.VM.Types
             throw new NotSupportedException();
         }
 
+        public Type GetInterfaceType()
+        {
+            return _object.GetType();
+        }
+
         public T GetInterface<T>() where T : class, IInteropInterface
         {
             return _object as T;

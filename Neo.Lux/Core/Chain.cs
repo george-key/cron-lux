@@ -77,9 +77,9 @@ namespace Neo.Lux.Core
             this.Chain = chain;
         }
 
-        public override void LoadScript(byte[] script, bool push_only = false)
+        public override ExecutionContext LoadScript(byte[] script, int rvcount = -1)
         {
-            base.LoadScript(script, push_only);
+            return base.LoadScript(script, rvcount);
 
             this.Chain.OnLoadScript(this, script);
         }
@@ -177,7 +177,7 @@ namespace Neo.Lux.Core
                         if (tx.script != null)
                         {
                             var vm = ExecuteVM(tx, TriggerType.Verification);
-                            var stack = vm.EvaluationStack;
+                            var stack = vm.ResultStack;
                             var result = stack != null && stack.Count >= 1 && stack.Peek(0).GetBoolean();
 
                             if (!result)
@@ -266,7 +266,7 @@ namespace Neo.Lux.Core
             int index = 0;
 
             var sb = new StringBuilder();
-            foreach (StackItem item in vm.EvaluationStack)
+            foreach (StackItem item in vm.ResultStack)
             {
                 if (index > 0)
                 {
@@ -353,11 +353,12 @@ namespace Neo.Lux.Core
 
             result.gasSpent = currentGas;
             result.state = vm.State;
-            result.stack = new object[vm.EvaluationStack.Count];
+            var stack = vm.ResultStack;
+            result.stack = new object[stack.Count];
 
-            for (int i=0; i<vm.EvaluationStack.Count; i++)
+            for (int i=0; i<stack.Count; i++)
             {
-                var item = vm.EvaluationStack.Peek(i);            
+                var item = stack.Peek(i);            
                 result.stack[i] = StackItemToObject(item);
             }
 
@@ -405,12 +406,12 @@ namespace Neo.Lux.Core
         #region VM METHODS
         private static T GetInteropFromStack<T>(ExecutionEngine engine) where T : class, IInteropInterface
         {
-            if (engine.EvaluationStack.Count == 0)
+            if (engine.CurrentContext.EvaluationStack.Count == 0)
             {
                 return default(T);
             }
 
-            var obj = engine.EvaluationStack.Pop() as VM.Types.InteropInterface;
+            var obj = engine.CurrentContext.EvaluationStack.Pop() as VM.Types.InteropInterface;
             if (obj == null)
             {
                 return default(T);
@@ -427,13 +428,13 @@ namespace Neo.Lux.Core
             Register("Neo.Transaction.GetReferences", Transaction_GetReferences, 0.2m);
             Register("Neo.Transaction.GetOutputs", Transaction_GetOutputs, defaultGasCost);
             Register("Neo.Transaction.GetInputs", Transaction_GetInputs, defaultGasCost);
-            Register("Neo.Transaction.GetHash", engine => { var tx = GetInteropFromStack<Transaction>(engine); if (tx == null) return false; engine.EvaluationStack.Push(tx.Hash.ToArray()); return true; }, defaultGasCost);
+            Register("Neo.Transaction.GetHash", engine => { var tx = GetInteropFromStack<Transaction>(engine); if (tx == null) return false; engine.CurrentContext.EvaluationStack.Push(tx.Hash.ToArray()); return true; }, defaultGasCost);
 
-            Register("Neo.Output.GetScriptHash", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.EvaluationStack.Push(output.scriptHash.ToArray()); return true; }, defaultGasCost);
-            Register("Neo.Output.GetValue", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.EvaluationStack.Push(output.value.ToBigInteger()); return true; }, defaultGasCost);
-            Register("Neo.Output.GetAssetId", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.EvaluationStack.Push(output.assetID); return true; }, defaultGasCost);
+            Register("Neo.Output.GetScriptHash", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.CurrentContext.EvaluationStack.Push(output.scriptHash.ToArray()); return true; }, defaultGasCost);
+            Register("Neo.Output.GetValue", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.CurrentContext.EvaluationStack.Push(output.value.ToBigInteger()); return true; }, defaultGasCost);
+            Register("Neo.Output.GetAssetId", engine => { var output = GetInteropFromStack<Transaction.Output>(engine); if (output == null) return false; engine.CurrentContext.EvaluationStack.Push(output.assetID); return true; }, defaultGasCost);
 
-            Register("Neo.Storage.GetContext", engine => { var hash = engine.CurrentContext.ScriptHash; var account = GetAccount(hash); engine.EvaluationStack.Push((new VM.Types.InteropInterface(account.storage))); return true; }, defaultGasCost);
+            Register("Neo.Storage.GetContext", engine => { var hash = engine.CurrentContext.ScriptHash; var account = GetAccount(hash); engine.CurrentContext.EvaluationStack.Push((new VM.Types.InteropInterface(account.storage))); return true; }, defaultGasCost);
             Register("Neo.Storage.Get", Storage_Get, 0.1m);
             Register("Neo.Storage.Put", Storage_Put, 0.1m);
             Register("Neo.Storage.Delete", Storage_Delete, 0.1m);
@@ -448,7 +449,7 @@ namespace Neo.Lux.Core
         public bool Runtime_Notify(ExecutionEngine engine)
         {
             //params object[] state
-            var something = engine.EvaluationStack.Pop();
+            var something = engine.CurrentContext.EvaluationStack.Pop();
 
             if (something is ICollection)
             {
@@ -502,7 +503,7 @@ namespace Neo.Lux.Core
 
         public bool Runtime_Log(ExecutionEngine engine)
         {
-            var msg = engine.EvaluationStack.Pop();
+            var msg = engine.CurrentContext.EvaluationStack.Pop();
             Logger(FormattingUtils.StackItemAsString(msg));
             return true;
         }
@@ -510,18 +511,18 @@ namespace Neo.Lux.Core
         private bool Storage_Get(ExecutionEngine engine)
         {
             var storage = GetInteropFromStack<Storage>(engine);
-            var key = engine.EvaluationStack.Pop().GetByteArray();
+            var key = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
             Logger($"Storage.Get: {key_name}");
 
             if (storage.entries.ContainsKey(key))
             {
-                engine.EvaluationStack.Push(storage.entries[key]);
+                engine.CurrentContext.EvaluationStack.Push(storage.entries[key]);
             }
             else
             {
-                engine.EvaluationStack.Push(new byte[0] { });
+                engine.CurrentContext.EvaluationStack.Push(new byte[0] { });
             }
 
             return true;
@@ -531,8 +532,8 @@ namespace Neo.Lux.Core
         {
             var storage = GetInteropFromStack<Storage>(engine);
 
-            var key = engine.EvaluationStack.Pop().GetByteArray();
-            var val = engine.EvaluationStack.Pop().GetByteArray();
+            var key = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
+            var val = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
             var val_name = FormattingUtils.OutputData(val, false);
@@ -545,7 +546,7 @@ namespace Neo.Lux.Core
         private bool Storage_Delete(ExecutionEngine engine)
         {
             var storage = GetInteropFromStack<Storage>(engine);
-            var key = engine.EvaluationStack.Pop().GetByteArray();
+            var key = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
             Logger($"Storage.Delete: {key_name}");
@@ -560,13 +561,13 @@ namespace Neo.Lux.Core
 
         private bool Runtime_GetTrigger(ExecutionEngine engine)
         {
-            engine.EvaluationStack.Push((int)currentTrigger);
+            engine.CurrentContext.EvaluationStack.Push((int)currentTrigger);
             return true;
         }
 
         private bool Runtime_GetTime(ExecutionEngine engine)
         {
-            engine.EvaluationStack.Push((int)this.GetTime());
+            engine.CurrentContext.EvaluationStack.Push((int)this.GetTime());
             return true;
         }
 
@@ -577,7 +578,7 @@ namespace Neo.Lux.Core
 
         public bool Runtime_CheckWitness(ExecutionEngine engine)
         {
-            byte[] hashOrPubkey = engine.EvaluationStack.Pop().GetByteArray();
+            byte[] hashOrPubkey = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             bool result;
 
@@ -619,7 +620,7 @@ namespace Neo.Lux.Core
 
             //DoLog($"Checking Witness [{matchType}]: {FormattingUtils.OutputData(hashOrPubkey, false)} => {result}");
 
-            engine.EvaluationStack.Push(new VM.Types.Boolean(result));
+            engine.CurrentContext.EvaluationStack.Push(new VM.Types.Boolean(result));
             return true;
         }
 
@@ -647,7 +648,7 @@ namespace Neo.Lux.Core
             }
 
             var result = new VM.Types.Array(items.ToArray<StackItem>());
-            engine.EvaluationStack.Push(result);
+            engine.CurrentContext.EvaluationStack.Push(result);
 
             return true;
         }
@@ -669,7 +670,7 @@ namespace Neo.Lux.Core
             }
 
             var result = new VM.Types.Array(items.ToArray<StackItem>());
-            engine.EvaluationStack.Push(result);
+            engine.CurrentContext.EvaluationStack.Push(result);
 
             return true;
         }
@@ -691,14 +692,14 @@ namespace Neo.Lux.Core
             }
 
             var result = new VM.Types.Array(items.ToArray<StackItem>());
-            engine.EvaluationStack.Push(result);
+            engine.CurrentContext.EvaluationStack.Push(result);
 
             return true;
         }
 
         private bool Contract_Create(ExecutionEngine engine)
         {
-            var script = engine.EvaluationStack.Pop().GetByteArray();
+            var script = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
             var hash = script.ToScriptHash();
             var account = GetAccount(hash);
 
@@ -706,20 +707,21 @@ namespace Neo.Lux.Core
             account.contract = contract;
             account.storage = new Storage();
 
-            contract.parameterList = engine.EvaluationStack.Pop().GetByteArray();
-            contract.returnType = engine.EvaluationStack.Pop().GetByte();
-            contract.properties = (ContractPropertyState) engine.EvaluationStack.Pop().GetByte();
-            contract.name = engine.EvaluationStack.Pop().GetString();
-            contract.version = engine.EvaluationStack.Pop().GetString();
-            contract.author = engine.EvaluationStack.Pop().GetString();
-            contract.email = engine.EvaluationStack.Pop().GetString();
-            contract.description = engine.EvaluationStack.Pop().GetString();
+            var stack = engine.CurrentContext.EvaluationStack;
+            contract.parameterList = stack.Pop().GetByteArray();
+            contract.returnType = stack.Pop().GetByte();
+            contract.properties = (ContractPropertyState)stack.Pop().GetByte();
+            contract.name = stack.Pop().GetString();
+            contract.version = stack.Pop().GetString();
+            contract.author = stack.Pop().GetString();
+            contract.email = stack.Pop().GetString();
+            contract.description = stack.Pop().GetString();
             contract.script = script;
 
             var address = hash.ToAddress();
             Logger($"Contract {contract.name} deployed at address {address}");
 
-            engine.EvaluationStack.Push(new VM.Types.InteropInterface(contract));
+            stack.Push(new VM.Types.InteropInterface(contract));
 
             return true;
         }

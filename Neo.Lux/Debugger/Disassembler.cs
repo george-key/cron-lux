@@ -210,6 +210,27 @@ namespace Neo.Lux.Debugger
                                 case OpCode.THROWIFNOT:
                                 */
 
+                                case OpCode.CALL_I:
+                                    {
+                                        int rvcount = reader.ReadByte();
+                                        int pcount = reader.ReadByte();
+                                        reader.ReadUInt16();
+                                        break;
+                                    }
+
+                                case OpCode.CALL_E:
+                                case OpCode.CALL_ED:
+                                case OpCode.CALL_ET:
+                                case OpCode.CALL_EDT:
+                                    {
+                                        int rvcount = reader.ReadByte();
+                                        int pcount = reader.ReadByte();
+                                        if (opcode != OpCode.CALL_ED && opcode != OpCode.CALL_EDT)
+                                           reader.ReadBytes(20);
+
+                                        break;
+                                    }
+
                                 default:
                                     {
                                         if (!Enum.IsDefined(typeof(OpCode), opcode))

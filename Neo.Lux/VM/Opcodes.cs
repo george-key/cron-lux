@@ -4,6 +4,7 @@
     {
         // Constants
         PUSH0 = 0x00, // An empty array of bytes is pushed onto the stack.
+        PUSHF = PUSH0,
         PUSHBYTES1 = 0x01, // 0x01-0x4B The next opcode bytes is data to be pushed onto the stack
         PUSHBYTES2 = 0x2,
         PUSHBYTES3 = 0x3,
@@ -84,6 +85,7 @@
         PUSHDATA4 = 0x4E, // The next four bytes contain the number of bytes to be pushed onto the stack.
         PUSHM1 = 0x4F, // The number -1 is pushed onto the stack.
         PUSH1 = 0x51, // The number 1 is pushed onto the stack.
+        PUSHT = PUSH1,
         PUSH2 = 0x52, // The number 2 is pushed onto the stack.
         PUSH3 = 0x53, // The number 3 is pushed onto the stack.
         PUSH4 = 0x54, // The number 4 is pushed onto the stack.
@@ -187,6 +189,7 @@
         HASH160 = 0xA9,
         HASH256 = 0xAA,
         CHECKSIG = 0xAC,
+        VERIFY = 0xAD,
         CHECKMULTISIG = 0xAE,
 
 
@@ -205,6 +208,15 @@
         HASKEY = 0xCB,
         KEYS = 0xCC,
         VALUES = 0xCD,
+
+
+        // Stack isolation
+        CALL_I = 0xE0,
+        CALL_E = 0xE1,
+        CALL_ED = 0xE2,
+        CALL_ET = 0xE3,
+        CALL_EDT = 0xE4,
+
 
         // Exceptions
         THROW = 0xF0,

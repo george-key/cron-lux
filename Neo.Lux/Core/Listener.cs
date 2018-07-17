@@ -25,13 +25,13 @@ namespace Neo.Lux.Core
 
             VMAPI.RegisterAPI(provider, this);
 
-            Register("Neo.Storage.GetContext", engine => { var hash = engine.CurrentContext.ScriptHash; engine.EvaluationStack.Push((new VM.Types.InteropInterface(storage[hash]))); return true; }, defaultGasCost);
+            Register("Neo.Storage.GetContext", engine => { var hash = engine.CurrentContext.ScriptHash; engine.CurrentContext.EvaluationStack.Push((new VM.Types.InteropInterface(storage[hash]))); return true; }, defaultGasCost);
             Register("Neo.Storage.Get", Storage_Get, 0.1m);
             Register("Neo.Storage.Put", Storage_Put, 0.1m);
             Register("Neo.Storage.Delete", Storage_Delete, 0.1m);
 
-            Register("Neo.Runtime.GetTime", engine => { engine.EvaluationStack.Push(currentBlock.Date.ToTimestamp()); return true; }, defaultGasCost);
-            Register("Neo.Runtime.GetTrigger", engine => { engine.EvaluationStack.Push((int)TriggerType.Application); return true; }, defaultGasCost);
+            Register("Neo.Runtime.GetTime", engine => { engine.CurrentContext.EvaluationStack.Push(currentBlock.Date.ToTimestamp()); return true; }, defaultGasCost);
+            Register("Neo.Runtime.GetTrigger", engine => { engine.CurrentContext.EvaluationStack.Push((int)TriggerType.Application); return true; }, defaultGasCost);
             //Register("Neo.Runtime.Log", Runtime_Log, defaultGasCost);
             Register("Neo.Runtime.Notify", Runtime_Notify, defaultGasCost);
         }
@@ -39,17 +39,17 @@ namespace Neo.Lux.Core
         private bool Storage_Get(ExecutionEngine engine)
         {
             var storage = engine.GetInteropFromStack<Storage>();
-            var key = engine.EvaluationStack.Pop().GetByteArray();
+            var key = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
 
             if (storage.entries.ContainsKey(key))
             {
-                engine.EvaluationStack.Push(storage.entries[key]);
+                engine.CurrentContext.EvaluationStack.Push(storage.entries[key]);
             }
             else
             {
-                engine.EvaluationStack.Push(new byte[0] { });
+                engine.CurrentContext.EvaluationStack.Push(new byte[0] { });
             }
 
             return true;
@@ -59,8 +59,8 @@ namespace Neo.Lux.Core
         {
             var storage = engine.GetInteropFromStack<Storage>();
 
-            var key = engine.EvaluationStack.Pop().GetByteArray();
-            var val = engine.EvaluationStack.Pop().GetByteArray();
+            var key = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
+            var val = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
             var val_name = FormattingUtils.OutputData(val, false);
@@ -72,7 +72,7 @@ namespace Neo.Lux.Core
         private bool Storage_Delete(ExecutionEngine engine)
         {
             var storage = engine.GetInteropFromStack<Storage>();
-            var key = engine.EvaluationStack.Pop().GetByteArray();
+            var key = engine.CurrentContext.EvaluationStack.Pop().GetByteArray();
 
             var key_name = FormattingUtils.OutputData(key, false);
 
@@ -86,7 +86,7 @@ namespace Neo.Lux.Core
       
         private bool Runtime_Notify(ExecutionEngine engine)
         {
-            var something = engine.EvaluationStack.Pop();
+            var something = engine.CurrentContext.EvaluationStack.Pop();
 
             if (something is ICollection)
             {

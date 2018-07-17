@@ -55,7 +55,8 @@ namespace Neo.Lux.Utils
 
             if (item is VM.Types.InteropInterface)
             {
-                return "{InteropInterface}";
+                var type = ((VM.Types.InteropInterface)item).GetInterfaceType();
+                return $"{type.Name}";
             }
 
             byte[] data = null;
