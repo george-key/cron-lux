@@ -1084,9 +1084,13 @@ namespace Neo.Lux.Core
 
             do
             {
-                Thread.Sleep(5000);
                 newBlock = GetBlockHeight();
-            } while (newBlock == oldBlock);
+                if (newBlock != oldBlock)
+                {
+                    break;
+                }
+                Thread.Sleep(5000);
+            } while (true);
 
             while (oldBlock < newBlock)
             {
