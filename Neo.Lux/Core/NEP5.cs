@@ -151,7 +151,7 @@ namespace Neo.Lux.Core
         }
 
         // FIXME - I'm almost sure that this code won't return non-integer balances correctly...
-        public decimal ConvertToDecimal(BigInteger value, BigInteger decimals)
+        public static decimal ConvertToDecimal(BigInteger value, BigInteger decimals)
         {
             if (value == 0)
             {

@@ -72,12 +72,22 @@ namespace Neo.Lux.Core
 
         public void BypassKey(UInt160 src, UInt160 dest)
         {
+            if (src == dest)
+            {
+                return;
+            }
+
             Logger($"Mapping witness {src} to use {dest} instead");
             _witnessMap[dest] = src;
         }
 
         public void BypassScript(UInt160 src, UInt160 dest)
         {
+            if (src == dest)
+            {
+                return;
+            }
+
             Logger($"Mapping script {src} to use {dest} instead");
             _scriptMap[src] = dest;
         }
