@@ -4,6 +4,7 @@ using Neo.Lux.VM;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 
@@ -161,10 +162,23 @@ namespace Neo.Lux.Utils
                                                             || "!@#$%^&*()-=_+[]{}|;':,./<>?".Contains(c.ToString());
                 if (!isValidText)
                 {
+                    string prefix = null;
+
+                    if (data.Length == 23)
+                    {
+                        prefix = Encoding.ASCII.GetString(data.Take(3).ToArray());
+                        data = data.Skip(3).ToArray();
+                    }
+
                     if (data.Length == 20)
                     {
                         var signatureHash = new UInt160(data);
-                        return CryptoUtils.ToAddress(signatureHash);
+                        var output = CryptoUtils.ToAddress(signatureHash);
+                        if (prefix != null)
+                        {
+                            output = prefix + "." + output;
+                        }
+                        return output;
                     }
 
                     return data.ByteToHex();
