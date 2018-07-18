@@ -151,14 +151,14 @@ namespace Neo.Lux.Core
         }
 
         // FIXME - I'm almost sure that this code won't return non-integer balances correctly...
-        private decimal ConvertToDecimal(BigInteger value)
+        public decimal ConvertToDecimal(BigInteger value, BigInteger decimals)
         {
             if (value == 0)
             {
                 return 0;
             }
 
-            var decs = this.Decimals;
+            var decs = decimals;
             while (decs > 0)
             {
                 value /= 10;
@@ -196,7 +196,7 @@ namespace Neo.Lux.Core
                 response = api.InvokeScript(ScriptHash, "balanceOf", new object[] { addressHash });
                 var bytes = (byte[])response.stack[0];
                 var balance = new BigInteger(bytes);
-                return ConvertToDecimal(balance);
+                return ConvertToDecimal(balance, this.Decimals);
             }
             catch
             {
@@ -302,7 +302,7 @@ namespace Neo.Lux.Core
 
             try
             {
-                return ConvertToDecimal((BigInteger)response.stack[0]);
+                return ConvertToDecimal((BigInteger)response.stack[0], this.Decimals);
             }
             catch (Exception e)
             {
