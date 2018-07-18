@@ -98,6 +98,8 @@ namespace Neo.Lux.Core
 
         private Dictionary<UInt256, List<Notification>> notifications = new Dictionary<UInt256, List<Notification>>();
 
+        public bool VerificateTransactions = true;
+
         private Block lastBlock = null;
         public uint GetBlockHeight()
         {
@@ -179,7 +181,7 @@ namespace Neo.Lux.Core
                 case TransactionType.ContractTransaction:
                 case TransactionType.InvocationTransaction:
                     {
-                        if (tx.script != null)
+                        if (VerificateTransactions && tx.script != null)
                         {
                             var vm = ExecuteVM(tx, TriggerType.Verification);
                             var stack = vm.ResultStack;
@@ -459,6 +461,7 @@ namespace Neo.Lux.Core
                 int index = 0;
 
                 var sb = new StringBuilder();
+                sb.Append("Notification: ");
                 foreach (StackItem item in items)
                 {
                     if (index > 0)
