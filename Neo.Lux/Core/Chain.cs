@@ -721,7 +721,7 @@ namespace Neo.Lux.Core
             var stack = engine.CurrentContext.EvaluationStack;
             contract.parameterList = stack.Pop().GetByteArray();
             contract.returnType = stack.Pop().GetByte();
-            contract.properties = (ContractPropertyState)stack.Pop().GetByte();
+            contract.properties = (ContractProperties)stack.Pop().GetByte();
             contract.name = stack.Pop().GetString();
             contract.version = stack.Pop().GetString();
             contract.author = stack.Pop().GetString();

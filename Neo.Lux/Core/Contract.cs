@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Neo.Lux.Core
 {
-    public enum ContractPropertyState : byte
+    public enum ContractProperties : byte
     {
         NoProperty = 0,
 
@@ -23,7 +23,7 @@ namespace Neo.Lux.Core
         public byte[] script;
         public byte[] parameterList;
         public byte returnType;
-        public ContractPropertyState properties;
+        public ContractProperties properties;
         public string name;
 
         public string version;
@@ -54,7 +54,7 @@ namespace Neo.Lux.Core
             reg.script = reader.ReadVarBytes();
             reg.parameterList = reader.ReadVarBytes();
             reg.returnType = reader.ReadByte();
-            reg.properties = (version >= 1) ? ((ContractPropertyState) reader.ReadByte()) : ContractPropertyState.NoProperty;
+            reg.properties = (version >= 1) ? ((ContractProperties) reader.ReadByte()) : ContractProperties.NoProperty;
             reg.name = reader.ReadVarString();
             reg.version = reader.ReadVarString();
             reg.author = reader.ReadVarString();

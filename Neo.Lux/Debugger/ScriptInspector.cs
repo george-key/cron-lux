@@ -1,4 +1,5 @@
-﻿using Neo.Lux.Cryptography;
+﻿using Neo.Lux.Core;
+using Neo.Lux.Cryptography;
 using Neo.Lux.VM;
 using System;
 using System.Collections.Generic;
@@ -16,10 +17,25 @@ namespace Neo.Lux.Debugger
         public List<object> arguments = new List<object>();
     }
 
+    public class ScriptDeployment
+    {
+        public UInt160 contractHash;
+        public byte[] script;
+        public string name;
+        public string author;
+        public string description;
+        public string email;
+        public string version;
+        public ContractProperties properties;
+    }
+
     public class ScriptInspector
     {
         private List<ScriptCall> _calls = new List<ScriptCall>();
         public IEnumerable<ScriptCall> Calls => _calls;
+
+        private List<ScriptDeployment> _deploys = new List<ScriptDeployment>();
+        public IEnumerable<ScriptDeployment> Deployments => _deploys;
 
         public ScriptInspector(byte[] script) : this(script, x=>true)
         {
@@ -87,6 +103,21 @@ namespace Neo.Lux.Debugger
 
                         argCount--;
                     }
+                }
+                else
+                if (op.opcode == OpCode.SYSCALL && Encoding.ASCII.GetString(op.data) == "Neo.Contract.Create")
+                {
+                    var deploy = new ScriptDeployment();
+
+                    deploy.script = instructions[i - 1].data;
+                    deploy.properties = (ContractProperties) (1 + ((byte)instructions[i - 4].opcode - OpCode.PUSH1));
+                    deploy.name = Encoding.ASCII.GetString(instructions[i - 5].data);
+                    deploy.version = Encoding.ASCII.GetString(instructions[i - 6].data);
+                    deploy.author = Encoding.ASCII.GetString(instructions[i - 7].data);
+                    deploy.email = Encoding.ASCII.GetString(instructions[i - 8].data);
+                    deploy.description = Encoding.ASCII.GetString(instructions[i - 9].data);
+
+                    _deploys.Add(deploy);
                 }
             }
         }

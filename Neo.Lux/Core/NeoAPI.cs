@@ -1028,7 +1028,7 @@ namespace Neo.Lux.Core
 
         #endregion
 
-        public Transaction DeployContract(KeyPair keys, byte[] script, byte[] parameter_list, byte return_type, ContractPropertyState properties, string name, string version, string author, string email, string description)
+        public Transaction DeployContract(KeyPair keys, byte[] script, byte[] parameter_list, byte return_type, ContractProperties properties, string name, string version, string author, string email, string description)
         {
             if (script.Length > 1024 * 1024) return null;
 
@@ -1055,12 +1055,12 @@ namespace Neo.Lux.Core
 
             decimal fee = 100;
 
-            if (properties.HasFlag(ContractPropertyState.HasStorage))
+            if (properties.HasFlag(ContractProperties.HasStorage))
             {
                 fee += 400;
             }
 
-            if (properties.HasFlag(ContractPropertyState.HasDynamicInvoke))
+            if (properties.HasFlag(ContractProperties.HasDynamicInvoke))
             {
                 fee += 500;
             }

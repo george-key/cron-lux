@@ -204,10 +204,22 @@ var iterator = new BlockIterator(api);
 var targetContractHash = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852".AddressToScriptHash();
 var token = new NEP5(api, targetContractHash);
 
-// Later on you can listen for specific transactions
+// You can listen for specific transactions of a specific type
+var tx = api.WaitForTransaction(iterator, x => x.type == TransactionType.ContractTransaction);
+if (tx != null) {
+	Console.WriteLine($"Transaction {tx.Hash} is a asset transfer");
+}
+
+// You can listen for specific transactions that contain certain contract operations
 var tx = api.WaitForTransaction(iterator, x => new ScriptInspector(x.script, targetContractHash).Any(y => y.operation == "transfer"));
 if (tx != null) {
 	Console.WriteLine($"Transaction {tx.Hash} contains transfer for {token.Name}");
+}
+
+// You can listen for specific transactions that contain certain new contract deployments
+var tx = api.WaitForTransaction(iterator, x => new ScriptInspector(x.script, targetContractHash).Deployments.Any());
+if (tx != null) {
+	Console.WriteLine($"Transaction {tx.Hash} deployed a new contract");
 }
 ```
 
