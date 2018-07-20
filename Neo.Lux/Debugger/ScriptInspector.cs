@@ -103,6 +103,8 @@ namespace Neo.Lux.Debugger
 
                         argCount--;
                     }
+
+                    _calls.Add(call);
                 }
                 else
                 if (op.opcode == OpCode.SYSCALL && Encoding.ASCII.GetString(op.data) == "Neo.Contract.Create")

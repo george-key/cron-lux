@@ -1099,22 +1099,7 @@ namespace Neo.Lux.Core
 
             while (true)
             {
-                do
-                {
-                    newBlock = GetBlockHeight();
-
-                    if (newBlock != iterator.currentBlock)
-                    {
-                        break;
-                    }
-                    else
-                    if (maxBlocksToWait == 0)
-                    {
-                        return null;
-                    }
-
-                    Thread.Sleep(5000);
-                } while (true);
+                newBlock = GetBlockHeight();
 
                 if (iterator.currentBlock > newBlock)
                 {
@@ -1123,13 +1108,15 @@ namespace Neo.Lux.Core
 
                 while (iterator.currentBlock <= newBlock)
                 {
-                    var other = GetBlock(iterator.currentBlock);
+                    var block = GetBlock(iterator.currentBlock);
 
-                    if (other != null)
+                    if (block != null)
                     {
-                        for (uint i = iterator.currentTransaction; i<other.transactions.Length; i++)
+                        for (uint i = iterator.currentTransaction; i<block.transactions.Length; i++)
                         {
-                            var tx = other.transactions[i];
+                            var tx = block.transactions[i];
+                            tx.block = block;
+
                             iterator.currentTransaction++;
 
                             if (filter(tx))
@@ -1140,20 +1127,17 @@ namespace Neo.Lux.Core
 
                         iterator.currentBlock++;
                         iterator.currentTransaction = 0;
+                    }
+                }
 
-                        if (maxBlocksToWait == 0)
-                        {
-                            return null;
-                        }
-                        else
-                        {
-                            maxBlocksToWait--;
-                        }
-                    }
-                    else
-                    {
-                        Thread.Sleep(5000);
-                    }
+                if (maxBlocksToWait == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    maxBlocksToWait--;
+                    Thread.Sleep(5000);
                 }
             }
         }

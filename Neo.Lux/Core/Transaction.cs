@@ -155,6 +155,8 @@ namespace Neo.Lux.Core
         public byte[] script;
         public decimal gas;
 
+        public Block block;
+
         public Input[] inputs;
         public Output[] outputs;
         public Witness[] witnesses;
