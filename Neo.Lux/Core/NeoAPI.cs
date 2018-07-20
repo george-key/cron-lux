@@ -20,6 +20,11 @@ namespace Neo.Lux.Core
             this.currentBlock = api.GetBlockHeight();
             this.currentTransaction = 0;
         }
+
+        public override string ToString()
+        {
+            return $"{currentBlock}/{currentTransaction}";
+        }
     }
 
     public class NeoException : Exception
