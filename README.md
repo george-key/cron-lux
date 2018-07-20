@@ -212,6 +212,15 @@ if (tx != null) {
 var tx = api.WaitForTransaction(iterator, x => new ScriptInspector(x.script, targetContractHash).Any(y => y.operation == "transfer"));
 if (tx != null) {
 	Console.WriteLine($"Transaction {tx.Hash} contains transfer for {token.Name}");
+	var inspector = new ScriptInspector(tx.script);
+	foreach (var call in inspector.Calls) {
+		if (call.operation == "transfer") {
+			var from = new UInt160(call.arguments[0]);
+			var to = new UInt160(call.arguments[1]);
+			var amount = new BigInteger(call.arguments[2]);
+			Console.WriteLine($"Transfer of {amount} from {from} to {to});
+		}
+	}
 }
 
 // You can listen for specific transactions that contain certain new contract deployments
