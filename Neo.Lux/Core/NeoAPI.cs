@@ -1111,6 +1111,11 @@ namespace Neo.Lux.Core
                     Thread.Sleep(5000);
                 } while (true);
 
+                if (iterator.currentBlock > newBlock)
+                {
+                    return null;
+                }
+
                 while (iterator.currentBlock <= newBlock)
                 {
                     var other = GetBlock(iterator.currentBlock);
@@ -1131,13 +1136,13 @@ namespace Neo.Lux.Core
                         iterator.currentBlock++;
                         iterator.currentTransaction = 0;
 
-                        if (maxBlocksToWait > 0)
+                        if (maxBlocksToWait == 0)
+                        {
+                            return null;
+                        }
+                        else
                         {
                             maxBlocksToWait--;
-                            if (maxBlocksToWait == 0)
-                            {
-                                return null;
-                            }
                         }
                     }
                     else
