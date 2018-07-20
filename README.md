@@ -218,7 +218,7 @@ if (tx != null) {
 			var from = new UInt160(call.arguments[0]);
 			var to = new UInt160(call.arguments[1]);
 			var amount = new BigInteger(call.arguments[2]);
-			Console.WriteLine($"Transfer of {amount} from {from} to {to});
+			Console.WriteLine($"Transfer of {amount} from {from.ToAddress()} to {to.ToAddress()});
 		}
 	}
 }
