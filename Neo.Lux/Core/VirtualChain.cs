@@ -5,6 +5,7 @@ using Neo.Lux.VM;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Neo.Lux.Core
 {
@@ -49,6 +50,19 @@ namespace Neo.Lux.Core
 
         internal override void OnLoadScript(ExecutionEngine vm, byte[] script)
         {
+            var context = vm.CallingContext;
+            if (context != null)
+            {
+                var sb = new StringBuilder();
+                for (int i=0; i<context.EvaluationStack.Count; i++)
+                {
+                    var item = context.EvaluationStack.Peek(i);
+                    if (sb.Length > 0) { sb.Append(","); };
+                    sb.Append(FormattingUtils.StackItemAsString(item));
+                }
+                Logger("Inputs: " + sb.ToString());
+            }
+
             base.OnLoadScript(vm, script);
 
             if (_debugger != null)

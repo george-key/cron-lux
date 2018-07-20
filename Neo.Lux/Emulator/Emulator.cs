@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Neo.Lux.Core;
 using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
 
-namespace Neo.Lux.Core
+namespace Neo.Lux.Emulator
 {
     public class Emulator: NeoAPI
     {
-        public enum Type
-        {
-            Unknown,
-            String,
-            Boolean,
-            Integer,
-            Array,
-            ByteArray
-        }
-
         public VirtualChain Chain { get; private set; }
 
         public Emulator(KeyPair owner)

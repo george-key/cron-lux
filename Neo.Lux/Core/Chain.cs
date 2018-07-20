@@ -591,15 +591,25 @@ namespace Neo.Lux.Core
 
                 var address = hash.ToAddress();
 
+                Logger($"Checking witness: {address}");
+
                 result = false;
 
+                foreach (var context in engine.InvocationStack)
+                {
+                    if (ValidateWitness(hash, context.ScriptHash))
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+
+                if (!result)
                 foreach (var input in tx.inputs)
                 {
                     var reference = GetTransaction(input.prevHash);
                     var output = reference.outputs[input.prevIndex];
                     var other_address = output.scriptHash.ToAddress();
-
-                    Logger($"Comparing {address} to {other_address}");
 
                     if (ValidateWitness(output.scriptHash, hash))
                     {

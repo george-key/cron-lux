@@ -1,6 +1,7 @@
 ﻿using Neo.Lux.Core;
 using Neo.Lux.Cryptography;
 using Neo.Lux.VM;
+using Neo.Lux.Emulator;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Neo.Lux.Utils
 {
     public static class FormattingUtils
     {
-        public static string StackItemAsString(StackItem item, bool addQuotes = false, Emulator.Type hintType = Emulator.Type.Unknown)
+        public static string StackItemAsString(StackItem item, bool addQuotes = false, VMType hintType = VMType.Unknown)
         {
             if (item is ICollection)
             {
@@ -44,12 +45,12 @@ namespace Neo.Lux.Utils
                 return s.ToString();
             }
 
-            if (item is VM.Types.Boolean && hintType == Emulator.Type.Unknown)
+            if (item is VM.Types.Boolean && hintType == VMType.Unknown)
             {
                 return item.GetBoolean().ToString();
             }
 
-            if (item is VM.Types.Integer && hintType == Emulator.Type.Unknown)
+            if (item is VM.Types.Integer && hintType == VMType.Unknown)
             {
                 return item.GetBigInteger().ToString();
             }
@@ -71,12 +72,12 @@ namespace Neo.Lux.Utils
 
             }
 
-            if ((data == null || data.Length == 0) && hintType == Emulator.Type.Unknown)
+            if ((data == null || data.Length == 0) && hintType == VMType.Unknown)
             {
                 return "Null";
             }
 
-            if (hintType == Emulator.Type.Array)
+            if (hintType == VMType.Array)
             {
                 var s = new StringBuilder();
                 s.Append('[');
@@ -92,7 +93,7 @@ namespace Neo.Lux.Utils
                         }
                         count++;
 
-                        s.Append(StackItemAsString(entry, addQuotes, Emulator.Type.Unknown));
+                        s.Append(StackItemAsString(entry, addQuotes, VMType.Unknown));
                     }
                 }
                 s.Append(']');
@@ -118,7 +119,7 @@ namespace Neo.Lux.Utils
             Void = 255
         };
 
-        public static string OutputData(byte[] data, bool addQuotes, Emulator.Type hintType = Emulator.Type.Unknown)
+        public static string OutputData(byte[] data, bool addQuotes, VMType hintType = VMType.Unknown)
         {
             if (data == null)
             {
@@ -127,11 +128,11 @@ namespace Neo.Lux.Utils
 
             var dataLen = data.Length;
 
-            if (hintType != Emulator.Type.Unknown)
+            if (hintType != VMType.Unknown)
             {
                 switch (hintType)
                 {
-                    case Emulator.Type.String:
+                    case VMType.String:
                         {
                             var val = System.Text.Encoding.UTF8.GetString(data);
                             if (addQuotes)
@@ -141,12 +142,12 @@ namespace Neo.Lux.Utils
                             return val;
                         }
 
-                    case Emulator.Type.Boolean:
+                    case VMType.Boolean:
                         {
                             return (data != null && data.Length > 0 && data[0] != 0) ? "True" : "False";
                         }
 
-                    case Emulator.Type.Integer:
+                    case VMType.Integer:
                         {
                             return new BigInteger(data).ToString();
                         }
