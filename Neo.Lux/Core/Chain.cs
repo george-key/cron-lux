@@ -270,20 +270,27 @@ namespace Neo.Lux.Core
 
             vm.Execute(x => OnVMStep(x));
 
-            int index = 0;
-
-            var sb = new StringBuilder();
-            foreach (StackItem item in vm.ResultStack)
+            if (vm.State == VMState.HALT)
             {
-                if (index > 0)
-                {
-                    sb.Append(" / ");
-                }
+                int index = 0;
 
-                sb.Append(FormattingUtils.StackItemAsString(item, true));
-                index++;
+                var sb = new StringBuilder();
+                foreach (StackItem item in vm.ResultStack)
+                {
+                    if (index > 0)
+                    {
+                        sb.Append(" / ");
+                    }
+
+                    sb.Append(FormattingUtils.StackItemAsString(item, true));
+                    index++;
+                }
+                Logger("Stack: " + sb);
             }
-            Logger("Stack: " + sb);
+            else
+            {
+                Logger("State: " + vm.State);
+            }
 
             return vm;
         }
