@@ -20,6 +20,8 @@ ad  <img
 - [Console Demo](#console-demo)
 - [Light Wallet Demo](#light-wallet-demo)
 - [Unity Support](#unity-support)
+- [Transaction Listening](#transaction-listening)
+- [Advanced operations](#advanced-operations)
 - [TODO](#todo)
 - [Credits and License](#credits-and-license)
 
@@ -190,11 +192,7 @@ The following code extracts all transactions related to a specific NEP5 token.
 	File.AppendAllLines("soul_txs.txt", soul_lines.ToArray());
 ```
 
-# Advanced operations
-
-NEOLux supports some advanced transaction operations specially useful for those doing an ICO in NEO.
-
-## Listening for specific transactions
+# Transaction Listening
 
 Many applications will need to react to certain transactions once they appear on the chain. The ScriptInspector class can be used for decoding contract calls along with their arguments.
 
@@ -222,6 +220,10 @@ if (tx != null) {
 	Console.WriteLine($"Transaction {tx.Hash} deployed a new contract");
 }
 ```
+
+# Advanced operations
+
+NEOLux supports some advanced transaction operations specially useful for those doing an ICO in NEO.
 
 ## Withdrawing NEO from an ICO contract address
 
