@@ -201,11 +201,24 @@ Many applications will need to react to certain transactions once they appear on
 var iterator = new BlockIterator(api);
 var targetContractHash = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852".AddressToScriptHash();
 var token = new NEP5(api, targetContractHash);
+var targetAddress = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852";
 
 // You can listen for specific transactions of a specific type
 var tx = api.WaitForTransaction(iterator, x => x.type == TransactionType.ContractTransaction);
 if (tx != null) {
 	Console.WriteLine($"Transaction {tx.Hash} is a asset transfer");
+}
+
+// You can listen for specific transactions arriving to a specific address 
+var tx = api.WaitForTransaction(iterator, x => x.HasOutput(targetAddress));
+if (tx != null) {
+	Console.WriteLine($"Transaction {tx.Hash} was sent to {targetAddress}");
+}
+
+// You can listen for specific transactions coming from a specific address 
+var tx = api.WaitForTransaction(iterator, x => x.HasInput(targetAddress));
+if (tx != null) {
+	Console.WriteLine($"Transaction {tx.Hash} was sent from {targetAddress}");
 }
 
 // You can listen for specific transactions that contain certain contract operations

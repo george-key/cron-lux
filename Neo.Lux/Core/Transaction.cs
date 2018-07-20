@@ -159,7 +159,7 @@ namespace Neo.Lux.Core
         public Output[] outputs;
         public Witness[] witnesses;
 
-        public Input[] references;
+        public Input[] claimReferences;
         public TransactionAttribute[] attributes;
 
         public AssetRegistration assetRegistration;
@@ -209,6 +209,63 @@ namespace Neo.Lux.Core
             return Hash.ToString();
         }
 
+        public bool HasInput(IBlockchainProvider provider, string address)
+        {
+            return HasInput(provider, new UInt160(address.AddressToScriptHash()));
+        }
+
+        public bool HasOutput(string address)
+        {
+            return HasOutput(new UInt160(address.AddressToScriptHash()));
+        }
+
+        public bool HasInput(IBlockchainProvider provider, UInt160 addressHash)
+        {
+            var references = GetReferences(provider);
+
+            foreach (var input in references)
+            {
+                foreach (var output in input.outputs)
+                {
+                    if (output.scriptHash == addressHash)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public IEnumerable<Transaction> GetReferences(IBlockchainProvider provider)
+        {
+            var result = new List<Transaction>();
+            foreach (var input in this.inputs)
+            {
+                var tx = provider.GetTransaction(input.prevHash);
+                if (tx == null)
+                {
+                    continue;
+                }
+
+                result.Add(tx);
+            }
+
+            return result;
+        }
+
+        public bool HasOutput(UInt160 addressHash)
+        {
+            foreach (var output in this.outputs)
+            {
+                if (output.scriptHash.Equals(addressHash))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public byte[] Serialize(bool signed = true)
         {
             using (var stream = new MemoryStream())
@@ -240,8 +297,8 @@ namespace Neo.Lux.Core
 
                         case TransactionType.ClaimTransaction:
                             {
-                                writer.WriteVarInt(this.references.Length);
-                                foreach (var entry in this.references)
+                                writer.WriteVarInt(this.claimReferences.Length);
+                                foreach (var entry in this.claimReferences)
                                 {
                                     SerializeTransactionInput(writer, entry);
                                 }
@@ -389,10 +446,10 @@ namespace Neo.Lux.Core
                 case TransactionType.ClaimTransaction:
                     {
                         var len = (int)reader.ReadVarInt((ulong)0x10000000);
-                        tx.references = new Input[len];
+                        tx.claimReferences = new Input[len];
                         for (int i = 0; i < len; i++)
                         {
-                            tx.references[i] = Transaction.UnserializeTransactionInput(reader);
+                            tx.claimReferences[i] = Transaction.UnserializeTransactionInput(reader);
                         }
 
                         break;

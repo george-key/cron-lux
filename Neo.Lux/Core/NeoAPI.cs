@@ -754,7 +754,7 @@ namespace Neo.Lux.Core
                 version = 0,
                 script = null,
                 gas = -1,
-                references = references.ToArray(),
+                claimReferences = references.ToArray(),
                 inputs = inputs.ToArray(),
                 outputs = outputs.ToArray(),
             };
@@ -813,7 +813,7 @@ namespace Neo.Lux.Core
                 version = 0,
                 script = null,
                 gas = -1,
-                references = references.ToArray(),
+                claimReferences = references.ToArray(),
                 inputs = inputs.ToArray(),
                 outputs =outputs.ToArray(),
             };
@@ -1097,6 +1097,7 @@ namespace Neo.Lux.Core
                 do
                 {
                     newBlock = GetBlockHeight();
+
                     if (newBlock != iterator.currentBlock)
                     {
                         break;
