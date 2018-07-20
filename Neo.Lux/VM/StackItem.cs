@@ -30,7 +30,12 @@ namespace Neo.Lux.VM
 
         public virtual BigInteger GetBigInteger()
         {
-            return new BigInteger(GetByteArray());
+            var temp = GetByteArray();
+            if (temp == null)
+            {
+                return 0;
+            }
+            return new BigInteger(temp);
         }
 
         public virtual bool GetBoolean()
