@@ -240,7 +240,7 @@ var ICO_address = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852"; // this should be the co
 var amount = 50;
 var tx = api.WithdrawAsset(team_keys, ICO_address, "NEO", amount, bytes);
 if (tx != null){
-	Console.WriteLine("Unconfirmed tx " + txw.Hash);
+	Console.WriteLine("Unconfirmed tx " + tx.Hash);
 }
 else {
 	Console.WriteLine("Sorry, transaction failed");
