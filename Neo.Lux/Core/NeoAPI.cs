@@ -10,6 +10,18 @@ using System.Threading;
 
 namespace Neo.Lux.Core
 {
+    public class BlockIterator
+    {        
+        public uint currentBlock;
+        public uint currentTransaction;
+
+        public BlockIterator(NeoAPI api)
+        {
+            this.currentBlock = api.GetBlockHeight();
+            this.currentTransaction = 0;
+        }
+    }
+
     public class NeoException : Exception
     {
         public NeoException(string msg) : base (msg)
@@ -21,6 +33,16 @@ namespace Neo.Lux.Core
         {
 
         }
+    }
+
+    public enum VMType
+    {
+        Unknown,
+        String,
+        Boolean,
+        Integer,
+        Array,
+        ByteArray
     }
 
     public class InvokeResult
@@ -43,8 +65,6 @@ namespace Neo.Lux.Core
                 return _logger != null ? _logger : DummyLogger;
             }
         }
-
-        private uint oldBlock;
 
         public virtual void SetLogger(Action<string> logger = null)
         {
@@ -596,11 +616,6 @@ namespace Neo.Lux.Core
 
         public bool SendTransaction(KeyPair keys, Transaction tx)
         {
-            if (oldBlock == 0)
-            {
-                oldBlock = this.GetBlockHeight();
-            }
-
             return SendTransaction(tx);
         }
 
@@ -1073,49 +1088,73 @@ namespace Neo.Lux.Core
             return ok ? tx : null;
         }
 
-        public void WaitForTransaction(KeyPair keys, Transaction tx)
+        public Transaction WaitForTransaction(BlockIterator iterator, Func<Transaction, bool> filter, int maxBlocksToWait = 9999)
+        {
+            uint newBlock;
+
+            while (true)
+            {
+                do
+                {
+                    newBlock = GetBlockHeight();
+                    if (newBlock != iterator.currentBlock)
+                    {
+                        break;
+                    }
+                    else
+                    if (maxBlocksToWait == 0)
+                    {
+                        return null;
+                    }
+
+                    Thread.Sleep(5000);
+                } while (true);
+
+                while (iterator.currentBlock <= newBlock)
+                {
+                    var other = GetBlock(iterator.currentBlock);
+
+                    if (other != null)
+                    {
+                        for (uint i = iterator.currentTransaction; i<other.transactions.Length; i++)
+                        {
+                            var tx = other.transactions[i];
+                            iterator.currentTransaction++;
+
+                            if (filter(tx))
+                            {
+                                return tx;
+                            }
+                        }
+
+                        iterator.currentBlock++;
+                        iterator.currentTransaction = 0;
+
+                        if (maxBlocksToWait > 0)
+                        {
+                            maxBlocksToWait--;
+                            if (maxBlocksToWait == 0)
+                            {
+                                return null;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Thread.Sleep(5000);
+                    }
+                }
+            }
+        }
+
+        public void WaitForTransaction(BlockIterator iterator, KeyPair keys, Transaction tx, int maxBlocksToWait = 9999)
         {
             if (tx == null)
             {
                 throw new ArgumentNullException();
             }
 
-            uint newBlock;
-
-            do
-            {
-                newBlock = GetBlockHeight();
-                if (newBlock != oldBlock)
-                {
-                    break;
-                }
-                Thread.Sleep(5000);
-            } while (true);
-
-            while (oldBlock < newBlock)
-            {
-                var other = GetBlock(oldBlock);
-
-                if (other != null)
-                {
-                    foreach (var entry in other.transactions)
-                    {
-                        if (entry.Hash == tx.Hash)
-                        {
-                            oldBlock = newBlock;
-                            break;
-                        }
-                    }
-
-                    oldBlock++;
-                }
-                else
-                {
-                    Thread.Sleep(5000);
-                }
-
-            }
-
+            WaitForTransaction(iterator, x => x.Hash == tx.Hash, maxBlocksToWait);
             lastTransactions[keys.address] = tx;
         }
 
