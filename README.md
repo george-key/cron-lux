@@ -1,5 +1,5 @@
 <p align="center">
-  <img
+ad  <img
     src="http://res.cloudinary.com/vidsy/image/upload/v1503160820/CoZ_Icon_DARKBLUE_200x178px_oq0gxm.png"
     width="125px"
   >
@@ -193,6 +193,23 @@ The following code extracts all transactions related to a specific NEP5 token.
 # Advanced operations
 
 NEOLux supports some advanced transaction operations specially useful for those doing an ICO in NEO.
+
+## Listening for specific transactions
+
+Many applications will need to react to certain transactions once they appear on the chain. The ScriptInspector class can be used for decoding contract calls along with their arguments.
+
+```c#            
+// First declare a BlockIterator
+var iterator = new BlockIterator(api);
+var targetContractHash = "AY9o94nWrUCEJ29UWhAodaJjQ16byjH852".AddressToScriptHash();
+var token = new NEP5(api, targetContractHash);
+
+// Later on you can listen for specific transactions
+var tx = api.WaitForTransaction(iterator, x => new ScriptInspector(x.script, targetContractHash).Any(y => y.operation == "transfer"));
+if (tx != null) {
+	Console.WriteLine($"Transaction {tx.Hash} contains transfer for {token.Name}");
+}
+```
 
 ## Withdrawing NEO from an ICO contract address
 
