@@ -11,7 +11,7 @@ using System.Threading;
 namespace Neo.Lux.Core
 {
     public class BlockIterator
-    {        
+    {
         public uint currentBlock;
         public uint currentTransaction;
 
@@ -29,7 +29,7 @@ namespace Neo.Lux.Core
 
     public class NeoException : Exception
     {
-        public NeoException(string msg) : base (msg)
+        public NeoException(string msg) : base(msg)
         {
 
         }
@@ -160,7 +160,8 @@ namespace Neo.Lux.Core
 
         // TODO NEP5 should be refactored to be a data object without the embedded api
 
-        public struct TokenInfo {
+        public struct TokenInfo
+        {
             public string symbol;
             public string hash;
             public string name;
@@ -182,9 +183,9 @@ namespace Neo.Lux.Core
                 AddToken("TKY", "132947096727c84c7f9e076c90f08fec3bc17f18", "TheKey", 8);
                 AddToken("TNC", "08e8c4400f1af2c20c28e0018f29535eb85d15b6", "Trinity", 8);
                 AddToken("CPX", "45d493a6f73fa5f404244a5fb8472fc014ca5885", "APEX", 8);
-                AddToken("ACAT","7f86d61ff377f1b12e589a5907152b57e2ad9a7a", "ACAT", 8);
+                AddToken("ACAT", "7f86d61ff377f1b12e589a5907152b57e2ad9a7a", "ACAT", 8);
                 AddToken("NRVE", "a721d5893480260bd28ca1f395f2c465d0b5b1c2", "Narrative", 8);
-                AddToken("THOR","67a5086bac196b67d5fd20745b0dc9db4d2930ed", "Thor", 8);
+                AddToken("THOR", "67a5086bac196b67d5fd20745b0dc9db4d2930ed", "Thor", 8);
                 AddToken("RHT", "2328008e6f6c7bd157a342e789389eb034d9cbc4", "HashPuppy", 0);
                 AddToken("IAM", "891daf0e1750a1031ebe23030828ad7781d874d6", "BridgeProtocol", 8);
                 AddToken("SWTH", "ab38352559b8b203bde5fddfa0b07d8b2525e132", "Switcheo", 8);
@@ -365,6 +366,16 @@ namespace Neo.Lux.Core
                 sb.EmitPush((BigInteger)item);
             }
             else
+            if (item is UInt160)
+            {
+                sb.EmitPush(((UInt160)item).ToArray());
+            }
+            else
+            if (item is UInt256)
+            {
+                sb.EmitPush(((UInt256)item).ToArray());
+            }
+            else
             if (item is int || item is sbyte || item is short)
             {
                 var n = (int)item;
@@ -401,7 +412,7 @@ namespace Neo.Lux.Core
                     var item = items.Pop();
                     EmitObject(sb, item);
                 }
-                
+
                 sb.EmitAppCall(scriptHash, false);
 
                 if (addNonce)
@@ -432,7 +443,7 @@ namespace Neo.Lux.Core
         }
 
         public void GenerateInputsOutputs(UInt160 from_script_hash, string symbol, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
-        {           
+        {
             var unspent = GetUnspent(from_script_hash);
             // filter any asset lists with zero unspent inputs
             unspent = unspent.Where(pair => pair.Value.Count > 0).ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -475,7 +486,7 @@ namespace Neo.Lux.Core
             }
 
             var targetAssetID = LuxUtils.ReverseHex(assetID).HexToBytes();
-            
+
             var sources = unspent[symbol];
             decimal selected = 0;
 
@@ -528,7 +539,7 @@ namespace Neo.Lux.Core
                 throw new NeoException($"Not enough {symbol}");
             }
 
-            if(cost > 0 && targets != null)
+            if (cost > 0 && targets != null)
             {
                 foreach (var target in targets)
                 {
@@ -569,32 +580,17 @@ namespace Neo.Lux.Core
 
         public Transaction CallContract(KeyPair key, UInt160 scriptHash, byte[] bytes, string attachSymbol = null, IEnumerable<Transaction.Output> attachTargets = null)
         {
-            /*var invoke = TestInvokeScript(net, bytes);
-            if (invoke.state == null)
+            List<Transaction.Input> inputs = null;
+            List<Transaction.Output> outputs = null;
+
+            if (!string.IsNullOrEmpty(attachSymbol))
             {
-                throw new Exception("Invalid script invoke");
-            }
+                GenerateInputsOutputs(key, attachSymbol, attachTargets, out inputs, out outputs);
 
-            decimal gasCost = invoke.gasSpent;*/
-
-            List<Transaction.Input> inputs;
-            List<Transaction.Output> outputs;
-
-            if (string.IsNullOrEmpty(attachSymbol))
-            {
-                attachSymbol = "GAS";
-            }
-
-            if (attachTargets == null)
-            {
-                attachTargets = new List<Transaction.Output>();                
-            }
-
-            GenerateInputsOutputs(key, attachSymbol, attachTargets, out inputs, out outputs);
-
-            if (inputs.Count == 0)
-            {
-                throw new NeoException($"Not enough inputs for transaction");
+                if (inputs.Count == 0)
+                {
+                    throw new NeoException($"Not enough inputs for transaction");
+                }
             }
 
             var transaction = new Transaction()
@@ -603,8 +599,9 @@ namespace Neo.Lux.Core
                 version = 0,
                 script = bytes,
                 gas = 0,
-                inputs = inputs.ToArray(),
-                outputs = outputs.ToArray()
+                inputs = inputs != null ? inputs.ToArray() : null,
+                outputs = outputs != null ? outputs.ToArray() : null,
+                attributes = inputs == null ? (new TransactionAttribute[] { new TransactionAttribute(TransactionAttributeUsage.Script, key.address.AddressToScriptHash()) } ) : null
             };
 
             transaction.Sign(key);
@@ -795,7 +792,7 @@ namespace Neo.Lux.Core
                 references.Add(new Transaction.Input() { prevHash = entry.hash, prevIndex = entry.index });
             }
 
-            if (amount <=0)
+            if (amount <= 0)
             {
                 throw new ArgumentException("No GAS to claim at this address");
             }
@@ -820,7 +817,7 @@ namespace Neo.Lux.Core
                 gas = -1,
                 claimReferences = references.ToArray(),
                 inputs = inputs.ToArray(),
-                outputs =outputs.ToArray(),
+                outputs = outputs.ToArray(),
             };
 
             var witness = new Witness { invocationScript = ("0014" + ownerKey.address.AddressToScriptHash().ByteToHex()).HexToBytes(), verificationScript = verificationScript };
@@ -928,7 +925,7 @@ namespace Neo.Lux.Core
 
         public abstract List<UnspentEntry> GetClaimable(UInt160 hash, out decimal amount);
 
-        public abstract Dictionary<string, List<UnspentEntry>> GetUnspent(UInt160 scripthash);        
+        public abstract Dictionary<string, List<UnspentEntry>> GetUnspent(UInt160 scripthash);
 
         public Dictionary<string, List<UnspentEntry>> GetUnspent(string address)
         {
@@ -1112,7 +1109,7 @@ namespace Neo.Lux.Core
 
                     if (block != null)
                     {
-                        for (uint i = iterator.currentTransaction; i<block.transactions.Length; i++)
+                        for (uint i = iterator.currentTransaction; i < block.transactions.Length; i++)
                         {
                             var tx = block.transactions[i];
                             tx.block = block;

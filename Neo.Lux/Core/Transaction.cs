@@ -58,13 +58,19 @@ namespace Neo.Lux.Core
         public TransactionAttributeUsage Usage;
         public byte[] Data;
 
+        public TransactionAttribute(TransactionAttributeUsage usage, byte[] data)
+        {
+            Usage = usage;
+            Data = data;
+        }
+
         public static TransactionAttribute Unserialize(BinaryReader reader)
         {
-            var Usage = (TransactionAttributeUsage) reader.ReadByte();
+            var Usage = (TransactionAttributeUsage)reader.ReadByte();
 
             byte[] Data;
 
-            if (Usage == TransactionAttributeUsage.ContractHash || Usage == TransactionAttributeUsage.Vote || ( Usage >= TransactionAttributeUsage.Hash1 && Usage <= TransactionAttributeUsage.Hash15))
+            if (Usage == TransactionAttributeUsage.ContractHash || Usage == TransactionAttributeUsage.Vote || (Usage >= TransactionAttributeUsage.Hash1 && Usage <= TransactionAttributeUsage.Hash15))
                 Data = reader.ReadBytes(32);
             else if (Usage == TransactionAttributeUsage.ECDH02 || Usage == TransactionAttributeUsage.ECDH03)
                 Data = new[] { (byte)Usage }.Concat(reader.ReadBytes(32)).ToArray();
@@ -77,7 +83,7 @@ namespace Neo.Lux.Core
             else
                 throw new NotImplementedException();
 
-            return new TransactionAttribute() { Usage = Usage, Data = Data};
+            return new TransactionAttribute() { Usage = Usage, Data = Data };
         }
 
         internal void Serialize(BinaryWriter writer)
@@ -135,7 +141,7 @@ namespace Neo.Lux.Core
         byte[] GetMessage();
     }
 
-    public class Transaction: IScriptContainer
+    public class Transaction : IScriptContainer
     {
         public class Input : IInteropInterface
         {
@@ -197,7 +203,7 @@ namespace Neo.Lux.Core
             var assetID = reader.ReadBytes(32);
             var value = reader.ReadFixed();
             var scriptHash = reader.ReadBytes(20);
-            return new Output() { assetID = assetID, value = value, scriptHash = new UInt160(scriptHash)};
+            return new Output() { assetID = assetID, value = value, scriptHash = new UInt160(scriptHash) };
         }
         #endregion
 
@@ -341,16 +347,30 @@ namespace Neo.Lux.Core
                         writer.Write((byte)0);
                     }
 
-                    writer.WriteVarInt(this.inputs.Length);
-                    foreach (var input in this.inputs)
+                    if (this.inputs != null)
                     {
-                        SerializeTransactionInput(writer, input);
+                        writer.WriteVarInt(this.inputs.Length);
+                        foreach (var input in this.inputs)
+                        {
+                            SerializeTransactionInput(writer, input);
+                        }
+                    }
+                    else
+                    {
+                        writer.Write((byte)0);
                     }
 
-                    writer.WriteVarInt(this.outputs.Length);
-                    foreach (var output in this.outputs)
+                    if (this.outputs != null)
                     {
-                        SerializeTransactionOutput(writer, output);
+                        writer.WriteVarInt(this.outputs.Length);
+                        foreach (var output in this.outputs)
+                        {
+                            SerializeTransactionOutput(writer, output);
+                        }
+                    }
+                    else
+                    {
+                        writer.Write((byte)0);
                     }
 
                     if (signed && this.witnesses != null)
@@ -392,7 +412,7 @@ namespace Neo.Lux.Core
                     witList.Add(entry);
                 }
             }
-            
+
             this.witnesses = witList.ToArray();
         }
 
@@ -417,7 +437,7 @@ namespace Neo.Lux.Core
         {
             var tx = new Transaction();
 
-            tx.type = (TransactionType) reader.ReadByte();
+            tx.type = (TransactionType)reader.ReadByte();
             tx.version = reader.ReadByte();
 
             switch (tx.type)
@@ -465,7 +485,7 @@ namespace Neo.Lux.Core
                 case TransactionType.StateTransaction:
                     {
                         int descCount = (int)reader.ReadVarInt(16);
-                        for (int i=0; i<descCount; i++)
+                        for (int i = 0; i < descCount; i++)
                         {
                             var Type = /*(StateType)*/reader.ReadByte();
                             var Key = reader.ReadVarBytes(100);
