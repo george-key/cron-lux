@@ -188,6 +188,11 @@ namespace Neo.Lux.Core
             return BalanceOf(keys.address);
         }
 
+        public decimal BalanceOf(UInt160 hash)
+        {
+            return BalanceOf(hash.ToArray());
+        }
+
         public decimal BalanceOf(byte[] addressHash)
         {
             InvokeResult response = new InvokeResult();
