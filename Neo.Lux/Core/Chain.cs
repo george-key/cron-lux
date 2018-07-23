@@ -201,34 +201,40 @@ namespace Neo.Lux.Core
 
         private void ExecuteTransaction(Transaction tx)
         {
-            foreach (var input in tx.inputs)
+            if (tx.inputs != null)
             {
-                var input_tx = GetTransaction(input.prevHash);
-                var output = input_tx.outputs[input.prevIndex];
-
-                var account = GetAccount(output.scriptHash);
-                account.Withdraw(output.assetID, output.value.ToBigInteger(), input);
-
-                var asset = GetAsset(output.assetID);
-                if (asset != null)
+                foreach (var input in tx.inputs)
                 {
-                    var address = output.scriptHash.ToAddress();
-                    Logger($"Withdrawing {output.value} {asset.name} from {address}");
+                    var input_tx = GetTransaction(input.prevHash);
+                    var output = input_tx.outputs[input.prevIndex];
+
+                    var account = GetAccount(output.scriptHash);
+                    account.Withdraw(output.assetID, output.value.ToBigInteger(), input);
+
+                    var asset = GetAsset(output.assetID);
+                    if (asset != null)
+                    {
+                        var address = output.scriptHash.ToAddress();
+                        Logger($"Withdrawing {output.value} {asset.name} from {address}");
+                    }
                 }
             }
 
             uint index = 0;
-            foreach (var output in tx.outputs)
+            if (tx.outputs != null)
             {
-                var account = GetAccount(output.scriptHash);
-                var unspent = new Transaction.Input() { prevIndex = index, prevHash = tx.Hash };
-                account.Deposit(output.assetID, output.value.ToBigInteger(), unspent);
+                foreach (var output in tx.outputs)
+                {
+                    var account = GetAccount(output.scriptHash);
+                    var unspent = new Transaction.Input() { prevIndex = index, prevHash = tx.Hash };
+                    account.Deposit(output.assetID, output.value.ToBigInteger(), unspent);
 
-                var asset = GetAsset(output.assetID);
-                var address = output.scriptHash.ToAddress();
-                Logger($"Depositing {output.value} {asset.name} to {address}");
+                    var asset = GetAsset(output.assetID);
+                    var address = output.scriptHash.ToAddress();
+                    Logger($"Depositing {output.value} {asset.name} to {address}");
 
-                index++;
+                    index++;
+                }
             }
 
             switch (tx.type)

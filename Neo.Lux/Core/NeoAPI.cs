@@ -495,24 +495,27 @@ namespace Neo.Lux.Core
                 var lastTx = lastTransactions[from_address];
 
                 uint index = 0;
-                foreach (var output in lastTx.outputs)
+                if (lastTx.outputs != null)
                 {
-                    if (output.assetID.SequenceEqual(targetAssetID) && output.scriptHash.Equals(from_script_hash))
+                    foreach (var output in lastTx.outputs)
                     {
-                        selected += output.value;
-
-                        var input = new Transaction.Input()
+                        if (output.assetID.SequenceEqual(targetAssetID) && output.scriptHash.Equals(from_script_hash))
                         {
-                            prevHash = lastTx.Hash,
-                            prevIndex = index,
-                        };
+                            selected += output.value;
 
-                        inputs.Add(input);
+                            var input = new Transaction.Input()
+                            {
+                                prevHash = lastTx.Hash,
+                                prevIndex = index,
+                            };
 
-                        break;
+                            inputs.Add(input);
+
+                            break;
+                        }
+
+                        index++;
                     }
-
-                    index++;
                 }
             }
 
@@ -583,6 +586,11 @@ namespace Neo.Lux.Core
             List<Transaction.Input> inputs = null;
             List<Transaction.Output> outputs = null;
 
+            if (attachSymbol == null)
+            {
+                attachSymbol = "GAS";
+            }   
+            
             if (!string.IsNullOrEmpty(attachSymbol))
             {
                 GenerateInputsOutputs(key, attachSymbol, attachTargets, out inputs, out outputs);

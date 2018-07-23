@@ -165,7 +165,7 @@ namespace Neo.Lux.Utils
 
         public static void WriteFixed(this BinaryWriter writer, decimal value)
         {
-            long D = 100_000_000;
+            long D = 100000000;
             value *= D;
             writer.Write((long)value);
         }
@@ -173,7 +173,7 @@ namespace Neo.Lux.Utils
         public static decimal ReadFixed(this BinaryReader reader)
         {
             var val = reader.ReadInt64();
-            long D = 100_000_000;
+            long D = 100000000;
             decimal r = val;
             r /= (decimal)D;
             return r; 
