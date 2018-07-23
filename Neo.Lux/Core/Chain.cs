@@ -357,7 +357,7 @@ namespace Neo.Lux.Core
 
         public InvokeResult InvokeScript(byte[] script)
         {
-            var result = new InvokeResult();
+            var invocation = new InvokeResult();
 
             Transaction tx = new Transaction()
             {
@@ -371,18 +371,12 @@ namespace Neo.Lux.Core
 
             var vm = ExecuteVM(tx, TriggerType.Application);
 
-            result.gasSpent = currentGas;
-            result.state = vm.State;
+            invocation.gasSpent = currentGas;
+            invocation.state = vm.State;
             var stack = vm.ResultStack;
-            result.stack = new object[stack.Count];
+            invocation.result = stack.Peek(0);
 
-            for (int i=0; i<stack.Count; i++)
-            {
-                var item = stack.Peek(i);            
-                result.stack[i] = StackItemToObject(item);
-            }
-
-            return result;
+            return invocation;
         }
 
         public static object StackItemToObject(StackItem item)

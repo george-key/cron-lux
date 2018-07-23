@@ -54,7 +54,7 @@ namespace Neo.Lux.Core
     {
         public VMState state;
         public decimal gasSpent;
-        public object[] stack;
+        public StackItem result;
         public Transaction transaction;
     }
 
@@ -246,28 +246,30 @@ namespace Neo.Lux.Core
             return LuxUtils.ReverseHex(hash.ToHexString());
         }
 
-        protected static object[] ParseStack(DataNode stack)
+        protected static StackItem ParseStack(DataNode stack)
         {
             if (stack != null)
             {
-                var items = new List<object>();
+                //var items = new List<StackItem>();
 
                 if (stack.Children.Count() > 0 && stack.Name == "stack")
                 {
                     foreach (var child in stack.Children)
                     {
                         var item = ParseStackItems(child);
-                        items.Add(item);
+                        return item;
+                        //items.Add(item);
                     }
                 }
 
-                return items.ToArray();
+                return null;
+                //return items.ToArray();
             }
 
             return null;
         }
 
-        protected static object ParseStackItems(DataNode stackItem)
+        protected static StackItem ParseStackItems(DataNode stackItem)
         {
             var type = stackItem.GetString("type");
             var value = stackItem.GetString("value");
@@ -276,29 +278,29 @@ namespace Neo.Lux.Core
             {
                 case "ByteArray":
                     {
-                        return value.HexToBytes();
+                        return new VM.Types.ByteArray(value.HexToBytes());
                     }
 
                 case "Boolean":
                     {
-                        return (value.ToLower() == "true");
+                        return new VM.Types.Boolean(value.ToLower() == "true");
                     }
 
                 case "Integer":
                     {
                         BigInteger intVal;
                         BigInteger.TryParse(value, out intVal);
-                        return intVal;
+                        return new VM.Types.Integer(intVal);
                     }
                 case "Array": // Type
                     {
-                        var items = new List<object>();
+                        var items = new List<StackItem>();
                         foreach (var child in stackItem.Children)
                         {
                             var item = ParseStackItems(child);
                             items.Add(item);
                         }
-                        return items.ToArray();
+                        return new VM.Types.Array(items);
                     }
                 default:
                     {

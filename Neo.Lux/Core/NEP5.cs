@@ -47,7 +47,7 @@ namespace Neo.Lux.Core
                     if (_name == null)
                     {
                         response = api.InvokeScript(ScriptHash, "name", new object[] { "" });
-                        _name = System.Text.Encoding.ASCII.GetString((byte[])response.stack[0]);
+                        _name = response.result.GetString();
                     }
 
                     return _name;
@@ -71,7 +71,7 @@ namespace Neo.Lux.Core
                     if (_symbol == null)
                     {
                         response = api.InvokeScript(ScriptHash, "symbol", new object[] { "" });
-                        _symbol = System.Text.Encoding.ASCII.GetString((byte[])response.stack[0]);
+                        _symbol = response.result.GetString();
                     }
 
                     return _symbol;
@@ -95,21 +95,7 @@ namespace Neo.Lux.Core
                     if (_decimals < 0)
                     {
                         response = api.InvokeScript(ScriptHash, "decimals", new object[] { "" });
-
-                        if (response.stack[0] is byte[])
-                        {
-                            var bytes = (byte[])response.stack[0];
-                            _decimals = new BigInteger(bytes);
-                        }
-                        else
-                        if (response.stack[0] is BigInteger)
-                        {
-                            _decimals = (BigInteger)(response.stack[0]);
-                        }
-                        else
-                        {
-                            _decimals = (int)response.stack[0];
-                        }
+                        _decimals = response.result.GetBigInteger();
                     }
 
                     return _decimals;
@@ -130,7 +116,7 @@ namespace Neo.Lux.Core
                 try
                 {
                     response = api.InvokeScript(ScriptHash, "totalSupply", new object[] { });
-                    var totalSupply = new BigInteger((byte[])response.stack[0]);
+                    var totalSupply = response.result.GetBigInteger();
 
                     var decs = Decimals;
                     while (decs > 0)
@@ -199,8 +185,7 @@ namespace Neo.Lux.Core
             try
             {
                 response = api.InvokeScript(ScriptHash, "balanceOf", new object[] { addressHash });
-                var bytes = (byte[])response.stack[0];
-                var balance = new BigInteger(bytes);
+                var balance = response.result.GetBigInteger();
                 return ConvertToDecimal(balance, this.Decimals);
             }
             catch
@@ -307,7 +292,7 @@ namespace Neo.Lux.Core
 
             try
             {
-                return ConvertToDecimal((BigInteger)response.stack[0], this.Decimals);
+                return ConvertToDecimal(response.result.GetBigInteger(), this.Decimals);
             }
             catch (Exception e)
             {

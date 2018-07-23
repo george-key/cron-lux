@@ -1,5 +1,9 @@
-﻿using LunarParser.JSON;
+﻿using LunarParser;
+using LunarParser.JSON;
+using Neo.Lux.Utils;
+using Neo.Lux.VM;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -25,7 +29,7 @@ namespace Neo.Lux.Emulator
             server.Start();
 
             // Buffer for reading data
-            Byte[] bytes = new Byte[256];
+            Byte[] bytes = new Byte[1024*64];
 
             // Enter the listening loop.
             while (true)
@@ -41,66 +45,84 @@ namespace Neo.Lux.Emulator
                     Console.WriteLine("Connected!");
 
                     // Get a stream object for reading and writing
-                    NetworkStream stream = client.GetStream();
+                    NetworkStream netStream = client.GetStream();
 
                     int i;
 
                     // Loop to receive all the data sent by the client.
                     var sb = new StringBuilder();
-                    while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                    do
                     {
-                        var str = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+                        var len = netStream.Read(bytes, 0, bytes.Length);
+                        if (len == 0)
+                        {
+                            break;
+                        }
+
+                        var str = Encoding.ASCII.GetString(bytes, 0, len);
                         sb.Append(str);
-                    }
 
-                    var json = sb.ToString();
-                    var root = JSONReader.ReadFromString(json);
+                        if (len < bytes.Length)
+                        {
+                            break;
+                        }
+                    } while (true);
 
-                    var method = root.GetString("method");
+                    var temp = sb.ToString();
+                    Console.WriteLine(temp);
 
-                    string result = null;
+                    var split = temp.Split('/');
+                    var method = split[0];
+                    var val = split[1];
+                    val = val.Substring(0, val.Length - 1);
+                    
+                    var result = DataNode.CreateObject("response");
 
                     switch (method)
                     {
-                        case "getaccountstate":
+                        case "GetChainHeight":
                             {
+                                result.AddField("height", this.emulator.GetBlockHeight());
                                 break;
                             }
 
-                        case "getstorage":
+                        case "InvokeScript":
                             {
+                                var script = val.HexToBytes();
+
+                                var obj = emulator.InvokeScript(script);
+
+                                using (var wstream = new MemoryStream())
+                                {
+                                    using (var writer = new BinaryWriter(wstream))
+                                    {
+                                        Serialization.SerializeStackItem(obj.result, writer);
+
+                                        var hex = wstream.ToArray().ByteToHex();
+
+                                        result.AddField("state", obj.state);
+                                        result.AddField("gas", obj.gasSpent);
+                                        result.AddField("stack", hex);
+                                    }
+                                }
+
                                 break;
                             }
 
-                        case "sendrawtransaction":
+                        default:
                             {
-                                break;
-                            }
-
-                        case "invokescript":
-                            {
-                                break;
-                            }
-
-                        case "getrawtransaction":
-                            {
-                                break;
-                            }
-
-                        case "getblockcount":
-                            {
-                                break;
-                            }
-
-                        case "getblock":
-                            {
+                                result.AddField("error", "invalid method");
                                 break;
                             }
                     }
 
-                    var output = Encoding.ASCII.GetBytes(result);
-                    stream.Write(output, 0, output.Length);
+                    var json = JSONWriter.WriteToString(result);
 
+                    Console.WriteLine(json);
+
+                    var output = Encoding.UTF8.GetBytes(json);
+                    netStream.Write(output, 0, output.Length);
+                    
                     client.Close();
                 }
                 catch (SocketException e)
