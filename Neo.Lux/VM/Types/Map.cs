@@ -10,8 +10,8 @@ namespace Neo.Lux.VM.Types
 
         public StackItem this[StackItem key]
         {
-            get => this.dictionary[key];
-            set => this.dictionary[key] = value;
+            get { return this.dictionary[key]; }
+            set { this.dictionary[key] = value; }
         }
 
         public ICollection<StackItem> Keys => dictionary.Keys;

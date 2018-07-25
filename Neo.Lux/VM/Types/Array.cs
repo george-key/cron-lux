@@ -11,8 +11,8 @@ namespace Neo.Lux.VM.Types
 
         public StackItem this[int index]
         {
-            get => _array[index];
-            set => _array[index] = value;
+            get { return _array[index]; }
+            set { _array[index] = value; }
         }
 
         public int Count => _array.Count;
