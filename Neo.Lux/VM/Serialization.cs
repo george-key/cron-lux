@@ -23,40 +23,50 @@ namespace Neo.Lux.VM
     {
         public static void SerializeStackItem(StackItem item, BinaryWriter writer)
         {
-            switch (item)
+            if (item is ByteArray)
             {
-                case ByteArray _:
-                    writer.Write((byte)StackItemType.ByteArray);
-                    writer.WriteVarBytes(item.GetByteArray());
-                    break;
-                case VMBoolean _:
-                    writer.Write((byte)StackItemType.Boolean);
-                    writer.Write(item.GetBoolean());
-                    break;
-                case Integer _:
-                    writer.Write((byte)StackItemType.Integer);
-                    writer.WriteVarBytes(item.GetByteArray());
-                    break;
-                case InteropInterface _:
-                    throw new NotSupportedException();
-                case VMArray array:
-                    if (array is Struct)
-                        writer.Write((byte)StackItemType.Struct);
-                    else
-                        writer.Write((byte)StackItemType.Array);
-                    writer.WriteVarInt(array.Count);
-                    foreach (StackItem subitem in array)
-                        SerializeStackItem(subitem, writer);
-                    break;
-                case Map map:
-                    writer.Write((byte)StackItemType.Map);
-                    writer.WriteVarInt(map.Count);
-                    foreach (var pair in map)
-                    {
-                        SerializeStackItem(pair.Key, writer);
-                        SerializeStackItem(pair.Value, writer);
-                    }
-                    break;
+                writer.Write((byte)StackItemType.ByteArray);
+                writer.WriteVarBytes(item.GetByteArray());
+            }
+            else
+            if (item is VMBoolean)
+            {
+                writer.Write((byte)StackItemType.Boolean);
+                writer.Write(item.GetBoolean());
+            }
+            else
+            if (item is Integer)
+            {
+                writer.Write((byte)StackItemType.Integer);
+                writer.WriteVarBytes(item.GetByteArray());
+            }
+            else
+            if (item is InteropInterface) {
+                throw new NotSupportedException();
+            }
+            else
+            if (item is VMArray)
+            {
+                var array = (VMArray)item;
+                if (array is Struct)
+                    writer.Write((byte)StackItemType.Struct);
+                else
+                    writer.Write((byte)StackItemType.Array);
+                writer.WriteVarInt(array.Count);
+                foreach (StackItem subitem in array)
+                    SerializeStackItem(subitem, writer);
+            }
+            else
+            if (item is Map)
+            {
+                var map = (Map)item;
+                writer.Write((byte)StackItemType.Map);
+                writer.WriteVarInt(map.Count);
+                foreach (var pair in map)
+                {
+                    SerializeStackItem(pair.Key, writer);
+                    SerializeStackItem(pair.Value, writer);
+                }
             }
         }
 

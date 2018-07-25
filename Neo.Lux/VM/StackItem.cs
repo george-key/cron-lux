@@ -18,8 +18,8 @@ namespace Neo.Lux.VM
         {
             if (obj == null) return false;
             if (obj == this) return true;
-            if (obj is StackItem other)
-                return Equals(other);
+            if (obj is StackItem)
+                return Equals((StackItem)obj);
             return false;
         }
 

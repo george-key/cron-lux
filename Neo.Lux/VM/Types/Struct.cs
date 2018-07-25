@@ -16,9 +16,9 @@ namespace Neo.Lux.VM.Types
             List<StackItem> newArray = new List<StackItem>(this._array.Count);
             for (var i = 0; i < _array.Count; i++)
             {
-                if (_array[i] is Struct s)
+                if (_array[i] is Struct)
                 {
-                    newArray.Add(s.Clone());
+                    newArray.Add(((Struct)_array[i]).Clone());
                 }
                 else
                 {
