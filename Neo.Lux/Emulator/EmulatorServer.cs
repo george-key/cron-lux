@@ -44,6 +44,24 @@ namespace Neo.Lux.Emulator
                         break;
                     }
 
+                case "GetBlockByHeight":
+                    {
+                        var height = uint.Parse(arg);
+                        var block = emulator.GetBlock(height);
+                        var bytes = block.Serialize();
+                        result.AddField("block", bytes.ByteToHex());
+                        break;
+                    }
+
+                case "GetBlockByHash":
+                    {
+                        var hash = new UInt256(arg.HexToBytes());
+                        var block = emulator.GetBlock(hash);
+                        var bytes = block.Serialize();
+                        result.AddField("block", bytes.ByteToHex());
+                        break;
+                    }
+
                 case "GetContractHash":
                     {
                         var hash = this.scriptMap[arg];
@@ -64,6 +82,42 @@ namespace Neo.Lux.Emulator
                             node.AddField("symbol", entry.Key);
                             node.AddField("value", entry.Value);
                         }
+                        break;
+                    }
+
+                case "GetUnspent":
+                    {
+                        var unspents = emulator.GetUnspent(arg);
+                        int index = 0;
+                        foreach (var entry in unspents)
+                        {
+                            var node = DataNode.CreateObject(index.ToString());
+                            index++;
+                            result.AddNode(node);
+
+                            node.AddField("asset", entry.Key);
+
+                            var list = DataNode.CreateArray("unspents");
+                            node.AddNode(list);
+
+                            foreach (var temp in entry.Value)
+                            {
+                                var child = DataNode.CreateObject();
+                                list.AddNode(child);
+
+                                child.AddField("hash", temp.hash.ToArray().ByteToHex());
+                                child.AddField("index", temp.index);
+                                child.AddField("value", temp.value);
+                            }
+                        }
+                        break;
+                    }
+
+                case "SendTransaction":
+                    {
+                        var bytes = arg.HexToBytes();
+                        var success = emulator.SendRawTransaction(bytes);
+                        result.AddField("success", success);
                         break;
                     }
 

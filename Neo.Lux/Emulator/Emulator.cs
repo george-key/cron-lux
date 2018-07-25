@@ -127,5 +127,11 @@ namespace Neo.Lux.Emulator
         {
             throw new NotImplementedException();
         }
+
+        public bool SendRawTransaction(byte[] bytes)
+        {
+            var tx = Transaction.Unserialize(bytes);
+            return SendTransaction(tx);
+        }
     }
 }

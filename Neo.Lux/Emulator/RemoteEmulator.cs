@@ -73,14 +73,14 @@ namespace Neo.Lux.Emulator
         public override Block GetBlock(UInt256 hash)
         {
             var response = DoRequest("GetBlockByHash", hash.ToString());
-            var bytes = response.GetString("rawblock").HexToBytes();
+            var bytes = response.GetString("block").HexToBytes();
             return Block.Unserialize(bytes);
         }
 
         public override Block GetBlock(uint height)
         {
             var response = DoRequest("GetBlockByHeight", height.ToString());
-            var bytes = response.GetString("rawblock").HexToBytes();
+            var bytes = response.GetString("block").HexToBytes();
             return Block.Unserialize(bytes);
         }
 
@@ -130,8 +130,10 @@ namespace Neo.Lux.Emulator
             foreach (var node in response.Children)
             {
                 var asset = node.GetString("asset");
+                var entries = node.GetNode("unspents");
+
                 var list = new List<UnspentEntry>();
-                foreach (var child in node.Children)
+                foreach (var child in entries.Children)
                 {
                     var entry = new UnspentEntry()
                     {
@@ -179,7 +181,7 @@ namespace Neo.Lux.Emulator
         {
             var hextx = tx.Serialize(true).ByteToHex();
             var response = DoRequest("SendTransaction", hextx);
-            return response.GetBool("result");
+            return response.GetBool("success");
         }
 
         protected override string GetRPCEndpoint()
