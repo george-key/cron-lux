@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using LunarParser.JSON;
+using LunarLabs.Parser.JSON;
 using Neo.Lux.Utils;
 
 namespace Neo.Lux.Debugger

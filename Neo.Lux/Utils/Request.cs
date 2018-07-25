@@ -1,5 +1,5 @@
-﻿using LunarParser;
-using LunarParser.JSON;
+﻿using LunarLabs.Parser;
+using LunarLabs.Parser.JSON;
 using System;
 using System.Net;
 

@@ -1,4 +1,4 @@
-﻿using LunarParser;
+﻿using LunarLabs.Parser;
 using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
 using System;
@@ -72,7 +72,7 @@ namespace Neo.Lux.Core
             var url = this.neoscanUrl +"/api/main_net/v1/get_balance/" + hash.ToAddress();
             var json = RequestUtils.GetWebRequest(url);
 
-            var root = LunarParser.JSON.JSONReader.ReadFromString(json);
+            var root = LunarLabs.Parser.JSON.JSONReader.ReadFromString(json);
             var unspents = new Dictionary<string, List<UnspentEntry>>();
 
             root = root["balance"];
@@ -102,7 +102,7 @@ namespace Neo.Lux.Core
             var url = this.neoscanUrl + "/api/main_net/v1/get_claimable/" + hash.ToAddress();
             var json = RequestUtils.GetWebRequest(url);
 
-            var root = LunarParser.JSON.JSONReader.ReadFromString(json);
+            var root = LunarLabs.Parser.JSON.JSONReader.ReadFromString(json);
             var result = new List<UnspentEntry>();
 
             amount = root.GetDecimal("unclaimed");

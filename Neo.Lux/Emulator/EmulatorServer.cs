@@ -1,12 +1,16 @@
-﻿using LunarParser;
-using LunarParser.JSON;
+﻿using LunarLabs.Parser;
+using LunarLabs.Parser.JSON;
+using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
 using Neo.Lux.VM;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Neo.Lux.Emulator
 {
@@ -15,12 +19,86 @@ namespace Neo.Lux.Emulator
         private Emulator emulator;
         private TcpListener server;
 
+        public Dictionary<string, UInt160> scriptMap = new Dictionary<string, UInt160>();
+
         public EmulatorServer(Emulator emulator, int port)
         {
             this.emulator = emulator;
 
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            
             // TcpListener server = new TcpListener(port);
             server = new TcpListener(IPAddress.Any, port);
+        }
+
+        private string ExecuteRequest(string method, string arg)
+        {
+            var result = DataNode.CreateObject("response");
+
+            switch (method)
+            {
+                case "GetChainHeight":
+                    {
+                        result.AddField("height", this.emulator.GetBlockHeight());
+                        break;
+                    }
+
+                case "GetContractHash":
+                    {
+                        var hash = this.scriptMap[arg];
+                        result.AddField("address", hash.ToAddress());
+                        break;
+                    }
+
+                case "GetAssetBalancesOf":
+                    {
+                        var assets = emulator.GetAssetBalancesOf(arg);
+                        int index = 0;
+                        foreach (var entry in assets)
+                        {
+                            var node = DataNode.CreateObject(index.ToString());
+                            index++;
+                            result.AddNode(node);
+
+                            node.AddField("symbol", entry.Key);
+                            node.AddField("value", entry.Value);
+                        }
+                        break;
+                    }
+
+                case "InvokeScript":
+                    {
+                        var script = arg.HexToBytes();
+
+                        var obj = emulator.InvokeScript(script);
+
+                        using (var wstream = new MemoryStream())
+                        {
+                            using (var writer = new BinaryWriter(wstream))
+                            {
+                                Serialization.SerializeStackItem(obj.result, writer);
+
+                                var hex = wstream.ToArray().ByteToHex();
+
+                                result.AddField("state", obj.state);
+                                result.AddField("gas", obj.gasSpent);
+                                result.AddField("stack", hex);
+                            }
+                        }
+
+                        break;
+                    }
+
+                default:
+                    {
+                        result.AddField("error", "invalid method");
+                        break;
+                    }
+            }
+
+            var json = JSONWriter.WriteToString(result);
+            return json;
         }
 
         public void Start() { 
@@ -36,7 +114,6 @@ namespace Neo.Lux.Emulator
             {
                 try
                 {
-
                     Console.Write("Waiting for a connection... ");
 
                     // Perform a blocking call to accept requests.
@@ -45,85 +122,36 @@ namespace Neo.Lux.Emulator
                     Console.WriteLine("Connected!");
 
                     // Get a stream object for reading and writing
-                    NetworkStream netStream = client.GetStream();
+                    var stream = client.GetStream();
 
-                    int i;
+                    string input;
 
-                    // Loop to receive all the data sent by the client.
-                    var sb = new StringBuilder();
-                    do
+                    using (var reader = new StreamReader(stream))
                     {
-                        var len = netStream.Read(bytes, 0, bytes.Length);
-                        if (len == 0)
+                        input = reader.ReadLine();
+
+                        Console.WriteLine(input);
+
+                        var temp = input.Split('/');
+                        var method = temp[0];
+                        var val = temp[1];
+
+                        string json;
+
+                        lock (this)
                         {
-                            break;
+                            json = ExecuteRequest(method, val);
                         }
 
-                        var str = Encoding.ASCII.GetString(bytes, 0, len);
-                        sb.Append(str);
+                        Console.WriteLine(json);
 
-                        if (len < bytes.Length)
-                        {
-                            break;
-                        }
-                    } while (true);
-
-                    var temp = sb.ToString();
-                    Console.WriteLine(temp);
-
-                    var split = temp.Split('/');
-                    var method = split[0];
-                    var val = split[1];
-                    val = val.Substring(0, val.Length - 1);
-                    
-                    var result = DataNode.CreateObject("response");
-
-                    switch (method)
-                    {
-                        case "GetChainHeight":
-                            {
-                                result.AddField("height", this.emulator.GetBlockHeight());
-                                break;
-                            }
-
-                        case "InvokeScript":
-                            {
-                                var script = val.HexToBytes();
-
-                                var obj = emulator.InvokeScript(script);
-
-                                using (var wstream = new MemoryStream())
-                                {
-                                    using (var writer = new BinaryWriter(wstream))
-                                    {
-                                        Serialization.SerializeStackItem(obj.result, writer);
-
-                                        var hex = wstream.ToArray().ByteToHex();
-
-                                        result.AddField("state", obj.state);
-                                        result.AddField("gas", obj.gasSpent);
-                                        result.AddField("stack", hex);
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            {
-                                result.AddField("error", "invalid method");
-                                break;
-                            }
+                        var output = Encoding.UTF8.GetBytes(json);
+                        stream.Write(output, 0, output.Length);
+                        stream.Flush();
+                        stream.Close();
+                        client.Close();
                     }
 
-                    var json = JSONWriter.WriteToString(result);
-
-                    Console.WriteLine(json);
-
-                    var output = Encoding.UTF8.GetBytes(json);
-                    netStream.Write(output, 0, output.Length);
-                    
-                    client.Close();
                 }
                 catch (SocketException e)
                 {

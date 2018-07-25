@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using LunarParser;
-using LunarParser.JSON;
+using LunarLabs.Parser;
+using LunarLabs.Parser.JSON;
 using Neo.Lux.Core;
 using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
@@ -30,29 +30,22 @@ namespace Neo.Lux.Emulator
         {
             try
             {
-                logger($"Baquest: {method}/{arg}");
+                logger($"Request: {method}/{arg}");
                 var client = new TcpClient(host, port);
+                client.NoDelay = true;
 
-                Logger("E.Encode");
-                var msg = Encoding.UTF8.GetBytes($"{method}/{arg}.");
+                var msg = Encoding.UTF8.GetBytes($"{method}/{arg}\r\n");
 
-                Logger("E.Stream");
                 NetworkStream stream = client.GetStream();
 
-                Logger("E.Write");
                 stream.Write(msg, 0, msg.Length);
 
-                Logger("E.Alloc");
                 var data = new byte[1024*64];
 
-                Logger("E.Read");
                 var bytes = stream.Read(data, 0, data.Length);
 
-                Logger("E.Decode");
                 var responseData = Encoding.UTF8.GetString(data, 0, bytes);
-                Logger("Response:" + responseData);
 
-                Logger("E.Close");
                 stream.Close();
                 client.Close();
 
@@ -72,7 +65,7 @@ namespace Neo.Lux.Emulator
             var result = new Dictionary<string, decimal>();
             foreach (var node in response.Children)
             {
-                result[node.GetString("asset")] = node.GetDecimal("value");
+                result[node.GetString("symbol")] = node.GetDecimal("value");
             }
             return result;
         }
@@ -173,6 +166,13 @@ namespace Neo.Lux.Emulator
                     return result;
                 }
             }
+        }
+
+        public UInt160 GetContractHash(string name)
+        {
+            var response = DoRequest("GetContractHash", name);
+            var address = response.GetString("address");
+            return new UInt160(address.AddressToScriptHash());
         }
 
         protected override bool SendTransaction(Transaction tx)

@@ -166,7 +166,7 @@ namespace Neo.Lux.Utils
         }
 
         private static ThreadLocal<SHA256> _sha256 = new ThreadLocal<SHA256>(() => SHA256.Create());
-        private static ThreadLocal<Neo.Lux.Cryptography.RIPEMD160Managed> _ripemd160 = new ThreadLocal<Neo.Lux.Cryptography.RIPEMD160Managed>(() => new Neo.Lux.Cryptography.RIPEMD160Managed());
+        private static ThreadLocal<Neo.Lux.Cryptography.RIPEMD160> _ripemd160 = new ThreadLocal<Neo.Lux.Cryptography.RIPEMD160>(() => new Neo.Lux.Cryptography.RIPEMD160());
 
         public static T[] SubArray<T>(this T[] data, int index, int length)
         {
