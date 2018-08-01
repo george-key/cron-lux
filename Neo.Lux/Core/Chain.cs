@@ -94,6 +94,7 @@ namespace Neo.Lux.Core
         protected Dictionary<UInt256, Block> _blockMap = new Dictionary<UInt256, Block>();
         protected Dictionary<UInt256, Transaction> _txMap = new Dictionary<UInt256, Transaction>();
         protected Dictionary<byte[], Asset> _assetMap = new Dictionary<byte[], Asset>(new ByteArrayComparer());
+
         protected Dictionary<UInt160, Account> _accountMap = new Dictionary<UInt160, Account>();
 
         private Dictionary<UInt256, List<Notification>> notifications = new Dictionary<UInt256, List<Notification>>();
@@ -414,6 +415,21 @@ namespace Neo.Lux.Core
             {
                 var t = item.GetType();
                 throw new Exception("Unknown type: " + t.Name);
+            }
+        }
+
+        internal void SetBlocks(Dictionary<uint, Block> blocks)
+        {
+            _blocks.Clear();
+            _blockMap.Clear();
+            _txMap.Clear();
+            _assetMap.Clear();
+            _accountMap.Clear();
+
+            notifications.Clear();
+            for (uint height =0; height<blocks.Count; height++)
+            {
+                AddBlock(blocks[height]);
             }
         }
 

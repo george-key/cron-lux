@@ -1,15 +1,11 @@
 ﻿using Neo.Lux.Core;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Neo.Lux.Utils
 {
-    class ChainUtils
+    public static class ChainUtils
     {
         public static byte[] Compress(byte[] data)
         {
@@ -41,88 +37,48 @@ namespace Neo.Lux.Utils
             }
         }
 
-        public static void ExportBlocks(int chunk, uint block, List<string> lines)
+        public static void ExportBlocks(this Chain chain, string fileName)
         {
-            byte[] txData;
-
-            using (var stream = new MemoryStream())
+            using (var stream = new FileStream(fileName, FileMode.Create))
             {
                 using (var writer = new BinaryWriter(stream))
                 {
-                    var curBlock = block;
-                    foreach (var line in lines)
+                    uint height = (uint)chain.GetBlockHeight();
+                    writer.Write(height);
+                    for (uint i = 0; i < height; i++)
                     {
-                        var bytes = line.HexToBytes();
-                        writer.Write(curBlock);
-                        writer.Write(bytes.Length);
+                        var block = chain.GetBlock(i);
+                        var bytes = block.Serialize();
+                        int len = bytes.Length;
+                        writer.Write(len);
                         writer.Write(bytes);
-                        curBlock++;
                     }
                 }
-
-                txData = stream.ToArray();
             }
-
-            var compressed = Compress(txData);
-
-            using (var stream = new MemoryStream())
-            {
-                using (var writer = new BinaryWriter(stream))
-                {
-
-                    writer.WriteVarInt(lines.Count);
-                    writer.Write(compressed.Length);
-                    writer.Write(compressed);
-                }
-
-                var data = stream.ToArray();
-                var fileName = "chain/chunk" + chunk;
-                File.WriteAllBytes(fileName, data);
-
-                // LoadChunk(fileName);
-            }
-
-            lines.Clear();
         }
 
-        public static List<Block> LoadChunk(string fileName)
+        public static void ImportBlocks(this Chain chain, string fileName)
         {
-            var bytes = File.ReadAllBytes(fileName);
-
-            byte[] txdata;
-            int blockCount;
-            using (var stream = new MemoryStream(bytes))
+            using (var stream = new FileStream(fileName, FileMode.Open))
             {
+                var blocks = new Dictionary<uint, Block>();
+
                 using (var reader = new BinaryReader(stream))
                 {
-                    blockCount = (int)reader.ReadVarInt();
-                    var len = reader.ReadInt32();
-                    var compressed = reader.ReadBytes(len);
-
-                    txdata = Decompress(compressed);
-                }
-            }
-
-            uint currentBlock = 0;
-            var blocks = new List<Block>();
-            using (var stream = new MemoryStream(txdata))
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    for (int i = 0; i < blockCount; i++)
+                    uint height = reader.ReadUInt32();                    
+                    for (uint i = 0; i < height; i++)
                     {
-                        currentBlock = reader.ReadUInt32();
-                        var len = reader.ReadInt32();
-                        var blockData = reader.ReadBytes(len);
-
-                        var block = Block.Unserialize(blockData);
-                        blocks.Add(block);
+                        int len = reader.ReadInt32();
+                        var bytes = reader.ReadBytes(len);
+                        var block = Block.Unserialize(reader);
+                        blocks[i] = block;
                     }
+
+                    chain.SetBlocks(blocks);
                 }
             }
-
-            return blocks;
         }
+
 
     }
 }
