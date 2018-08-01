@@ -155,7 +155,7 @@ namespace Neo.Lux.Emulator
             return json;
         }
 
-        public void Start() { 
+        public void Start(Action callback) { 
 
             // Start listening for client requests.
             server.Start();
@@ -206,6 +206,7 @@ namespace Neo.Lux.Emulator
                         client.Close();
                     }
 
+                    callback();
                 }
                 catch (SocketException e)
                 {
