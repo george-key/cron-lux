@@ -186,8 +186,6 @@ namespace Neo.Lux.Utils
             return temp;
         }
         
-        private static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         public static string ByteToHex(this byte[] data)
         {
             string hex = BitConverter.ToString(data).Replace("-", "").ToLower();
@@ -281,16 +279,6 @@ namespace Neo.Lux.Utils
         internal static bool TestBit(this BigInteger i, int index)
         {
             return (i & (BigInteger.One << index)) > BigInteger.Zero;
-        }
-
-        public static DateTime ToDateTime(this uint timestamp)
-        {
-            return unixEpoch.AddSeconds(timestamp);
-        }
-
-        public static DateTime ToDateTime(this ulong timestamp)
-        {
-            return unixEpoch.AddSeconds(timestamp);
         }
 
         public static string ToHexString(this IEnumerable<byte> value)
@@ -398,6 +386,18 @@ namespace Neo.Lux.Utils
                 }
                 yield return resultSelector(item, weight);
             }
+        }
+
+        private static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public static DateTime ToDateTime(this uint timestamp)
+        {
+            return unixEpoch.AddSeconds(timestamp);
+        }
+
+        public static DateTime ToDateTime(this ulong timestamp)
+        {
+            return unixEpoch.AddSeconds(timestamp);
         }
 
         public static uint ToTimestamp(this DateTime time)
