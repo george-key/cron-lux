@@ -13,6 +13,16 @@ namespace Neo.Lux.Debugger
         public int endOfs;
         public OpCode opcode;
         public byte[] data;
+
+        public override string ToString()
+        {
+            var s = opcode.ToString();
+            if (data != null)
+            {
+                s = $"{s} => {FormattingUtils.OutputData(data, false)}";
+            }
+            return s;
+        }
     }
 
     public static class NeoTools
