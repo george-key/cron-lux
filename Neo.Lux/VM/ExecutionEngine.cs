@@ -53,7 +53,24 @@ namespace Neo.Lux.VM
         public ExecutionContext CurrentContext => InvocationStack.Peek();
         public ExecutionContext CallingContext => InvocationStack.Count > 1 ? InvocationStack.Peek(1) : null;
         public ExecutionContext EntryContext => InvocationStack.Peek(InvocationStack.Count - 1);
-        public VMState State { get; protected set; } = VMState.BREAK;
+
+        private VMState _state = VMState.BREAK;
+        public VMState State
+        {
+            get
+            {
+                return _state;
+            }
+
+            protected set
+            {
+                _state = value;
+                if (_state == VMState.FAULT)
+                {
+                    _state = VMState.FAULT;
+                }
+            }
+        }
 
         public ExecutionEngine(IScriptContainer container, IScriptTable table = null, InteropService service = null)
         {
