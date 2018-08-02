@@ -41,7 +41,8 @@ namespace Neo.Lux.VM
                 writer.WriteVarBytes(item.GetByteArray());
             }
             else
-            if (item is InteropInterface) {
+            if (item is InteropInterface)
+            {
                 throw new NotSupportedException();
             }
             else
@@ -66,6 +67,17 @@ namespace Neo.Lux.VM
                 {
                     SerializeStackItem(pair.Key, writer);
                     SerializeStackItem(pair.Value, writer);
+                }
+            }
+        }
+
+        public static StackItem DeserializeStackItem(byte[] bytes)
+        {
+            using (var stream = new MemoryStream(bytes))
+            {
+                using (var reader = new BinaryReader(stream))
+                {
+                    return DeserializeStackItem(reader);
                 }
             }
         }

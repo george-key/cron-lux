@@ -54,8 +54,7 @@ namespace Neo.Lux.Emulator
             }
             catch (Exception e)
             {
-                Logger("exception: " + e);
-                return null;
+                throw new EmulatorException(e.ToString());
             }
         }
 
@@ -72,121 +71,197 @@ namespace Neo.Lux.Emulator
 
         public override Block GetBlock(UInt256 hash)
         {
-            var response = DoRequest("GetBlockByHash", hash.ToString());
-            var bytes = response.GetString("block").HexToBytes();
-            return Block.Unserialize(bytes);
+            try
+            {
+                var response = DoRequest("GetBlockByHash", hash.ToString());
+                var bytes = response.GetString("block").HexToBytes();
+                return Block.Unserialize(bytes);
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         public override Block GetBlock(uint height)
         {
-            var response = DoRequest("GetBlockByHeight", height.ToString());
-            var bytes = response.GetString("block").HexToBytes();
-            return Block.Unserialize(bytes);
+            try
+            {
+                var response = DoRequest("GetBlockByHeight", height.ToString());
+                if (response == null)
+                {
+                    return null;
+                }
+
+                var bytes = response.GetString("block").HexToBytes();
+                return Block.Unserialize(bytes);
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         public override uint GetBlockHeight()
         {
-            var response = DoRequest("GetChainHeight", "");
-            return response.GetUInt32("height");
+            try
+            {
+                var response = DoRequest("GetChainHeight", "");
+                if (response == null)
+                {
+                    return 0;
+                }
+
+                return response.GetUInt32("height");
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         public override List<UnspentEntry> GetClaimable(UInt160 hash, out decimal amount)
         {
-            var response = DoRequest("GetClaimable", hash.ToAddress());
-            var result = new List<UnspentEntry>();
-            amount = 0;
-            foreach (var node in response.Children)
+            try
             {
-                var entry = new UnspentEntry()
+                var response = DoRequest("GetClaimable", hash.ToAddress());
+                var result = new List<UnspentEntry>();
+                amount = 0;
+                foreach (var node in response.Children)
                 {
-                    hash = new UInt256(node.GetString("hash").HexToBytes()),
-                    index = node.GetUInt32("index"),
-                    value = node.GetDecimal("value")
-                };
-                amount += entry.value;
-                result.Add(entry);
+                    var entry = new UnspentEntry()
+                    {
+                        hash = new UInt256(node.GetString("hash").HexToBytes()),
+                        index = node.GetUInt32("index"),
+                        value = node.GetDecimal("value")
+                    };
+                    amount += entry.value;
+                    result.Add(entry);
+                }
+                return result;
             }
-            return result;
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
+
         }
 
         public override byte[] GetStorage(string scriptHash, byte[] key)
         {
-            var response = DoRequest("GetStorage", key.ByteToHex());
-            return response.GetString("value").HexToBytes();
+            try
+            {
+                var response = DoRequest("GetStorage", key.ByteToHex());
+                return response.GetString("value").HexToBytes();
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         public override Transaction GetTransaction(UInt256 hash)
         {
-            var response = DoRequest("GetTransaction", hash.ToString());
-            var bytes = response.GetString("rawtx").HexToBytes();
-            return Transaction.Unserialize(bytes);
+            try
+            {
+                var response = DoRequest("GetTransaction", hash.ToString());
+                var bytes = response.GetString("rawtx").HexToBytes();
+                return Transaction.Unserialize(bytes);
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         public override Dictionary<string, List<UnspentEntry>> GetUnspent(UInt160 hash)
         {
-            var response = DoRequest("GetUnspent", hash.ToAddress());
-            var result = new Dictionary<string, List<UnspentEntry>>();
-
-            foreach (var node in response.Children)
+            try
             {
-                var asset = node.GetString("asset");
-                var entries = node.GetNode("unspents");
+                var response = DoRequest("GetUnspent", hash.ToAddress());
+                var result = new Dictionary<string, List<UnspentEntry>>();
 
-                var list = new List<UnspentEntry>();
-                foreach (var child in entries.Children)
+                foreach (var node in response.Children)
                 {
-                    var entry = new UnspentEntry()
-                    {
-                        hash = new UInt256(child.GetString("hash").HexToBytes()),
-                        index = child.GetUInt32("index"),
-                        value = child.GetDecimal("value")
-                    };
-                    list.Add(entry);
-                }
+                    var asset = node.GetString("asset");
+                    var entries = node.GetNode("unspents");
 
-                result[asset] = list;
+                    var list = new List<UnspentEntry>();
+                    foreach (var child in entries.Children)
+                    {
+                        var entry = new UnspentEntry()
+                        {
+                            hash = new UInt256(child.GetString("hash").HexToBytes()),
+                            index = child.GetUInt32("index"),
+                            value = child.GetDecimal("value")
+                        };
+                        list.Add(entry);
+                    }
+
+                    result[asset] = list;
+                }
+                return result;
             }
-            return result;
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         public override InvokeResult InvokeScript(byte[] script)
         {
-            var response = DoRequest("InvokeScript", script.ByteToHex());
-
-            var bytes = response.GetString("stack").HexToBytes();
-            using (var stream = new MemoryStream(bytes))
+            try
             {
-                using (var reader = new BinaryReader(stream))
-                {
-                    var result = new InvokeResult()
-                    {
-                        result = Serialization.DeserializeStackItem(reader),
-                        state = (VMState)Enum.Parse(typeof(VMState), response.GetString("state"), true),
-                        gasSpent = response.GetDecimal("gas"),
-                    };
+                var response = DoRequest("InvokeScript", script.ByteToHex());
 
-                    return result;
+                var bytes = response.GetString("stack").HexToBytes();
+                using (var stream = new MemoryStream(bytes))
+                {
+                    using (var reader = new BinaryReader(stream))
+                    {
+                        var result = new InvokeResult()
+                        {
+                            result = Serialization.DeserializeStackItem(reader),
+                            state = (VMState)Enum.Parse(typeof(VMState), response.GetString("state"), true),
+                            gasSpent = response.GetDecimal("gas"),
+                        };
+
+                        return result;
+                    }
                 }
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
             }
         }
 
         public UInt160 GetContractHash(string name)
         {
-            var response = DoRequest("GetContractHash", name);
-            var address = response.GetString("address");
-            return new UInt160(address.AddressToScriptHash());
+            try
+            {
+                var response = DoRequest("GetContractHash", name);
+                var address = response.GetString("address");
+                return new UInt160(address.AddressToScriptHash());
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
 
         protected override bool SendTransaction(Transaction tx)
         {
-            var hextx = tx.Serialize(true).ByteToHex();
-            var response = DoRequest("SendTransaction", hextx);
-            return response.GetBool("success");
-        }
-
-        protected override string GetRPCEndpoint()
-        {
-            throw new NotImplementedException();
+            try
+            {
+                var hextx = tx.Serialize(true).ByteToHex();
+                var response = DoRequest("SendTransaction", hextx);
+                return response.GetBool("success");
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
         }
     }
 }

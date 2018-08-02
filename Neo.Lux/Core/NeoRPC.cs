@@ -34,6 +34,72 @@ namespace Neo.Lux.Core
             return new LocalRPCNode(30333, "http://localhost:4000");
         }
 
+        #region RPC API
+        public string rpcEndpoint { get; set; }
+
+        protected abstract string GetRPCEndpoint();
+
+        private void LogData(DataNode node, int ident = 0)
+        {
+            var tabs = new string('\t', ident);
+            Logger($"{tabs}{node}");
+            foreach (DataNode child in node.Children)
+                LogData(child, ident + 1);
+        }
+
+        public DataNode QueryRPC(string method, object[] _params, int id = 1)
+        {
+            var paramData = DataNode.CreateArray("params");
+            foreach (var entry in _params)
+            {
+                paramData.AddField(null, entry);
+            }
+
+            var jsonRpcData = DataNode.CreateObject(null);
+            jsonRpcData.AddField("method", method);
+            jsonRpcData.AddNode(paramData);
+            jsonRpcData.AddField("id", id);
+            jsonRpcData.AddField("jsonrpc", "2.0");
+
+            Logger("QueryRPC: " + method);
+            LogData(jsonRpcData);
+
+            int retryCount = 0;
+            do
+            {
+                if (rpcEndpoint == null)
+                {
+                    rpcEndpoint = GetRPCEndpoint();
+                    Logger("Update RPC Endpoint: " + rpcEndpoint);
+                }
+
+                var response = RequestUtils.Request(RequestType.POST, rpcEndpoint, jsonRpcData);
+
+                if (response != null && response.HasNode("result"))
+                {
+                    return response;
+                }
+                else
+                {
+                    if (response != null && response.HasNode("error"))
+                    {
+                        var error = response["error"];
+                        Logger("RPC Error: " + error.GetString("message"));
+                    }
+                    else
+                    {
+                        Logger("No answer");
+                    }
+                    rpcEndpoint = null;
+                    retryCount++;
+                }
+
+            } while (retryCount < 10);
+
+            return null;
+        }
+        #endregion
+
         public override Dictionary<string, decimal> GetAssetBalancesOf(UInt160 scriptHash)
         {
             var response = QueryRPC("getaccountstate", new object[] { scriptHash.ToAddress() });
