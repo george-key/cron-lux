@@ -423,7 +423,6 @@ namespace Neo.Lux.Core
             _blocks.Clear();
             _blockMap.Clear();
             _txMap.Clear();
-            _assetMap.Clear();
             _accountMap.Clear();
 
             notifications.Clear();

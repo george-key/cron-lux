@@ -52,6 +52,8 @@ namespace Neo.Lux.Utils
                         int len = bytes.Length;
                         writer.Write(len);
                         writer.Write(bytes);
+
+                        //var temp = Block.Unserialize(bytes);
                     }
                 }
             }
@@ -70,7 +72,7 @@ namespace Neo.Lux.Utils
                     {
                         int len = reader.ReadInt32();
                         var bytes = reader.ReadBytes(len);
-                        var block = Block.Unserialize(reader);
+                        var block = Block.Unserialize(bytes);
                         blocks[i] = block;
                     }
 

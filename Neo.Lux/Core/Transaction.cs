@@ -373,12 +373,19 @@ namespace Neo.Lux.Core
                         writer.Write((byte)0);
                     }
 
-                    if (signed && this.witnesses != null)
+                    if (signed)
                     {
-                        writer.WriteVarInt(this.witnesses.Length);
-                        foreach (var witness in this.witnesses)
+                        if (this.witnesses != null)
                         {
-                            witness.Serialize(writer);
+                            writer.WriteVarInt(this.witnesses.Length);
+                            foreach (var witness in this.witnesses)
+                            {
+                                witness.Serialize(writer);
+                            }
+                        }
+                        else
+                        {
+                            writer.Write((byte)0);
                         }
                     }
 
