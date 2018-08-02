@@ -112,11 +112,6 @@ namespace Neo.Lux.Emulator
             return result;
         }
 
-        protected override string GetRPCEndpoint()
-        {
-            return "/emulator";
-        }
-
         public override void SetLogger(Action<string> logger = null)
         {
             base.SetLogger(logger);
