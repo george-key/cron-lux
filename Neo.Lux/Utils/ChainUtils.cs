@@ -53,7 +53,7 @@ namespace Neo.Lux.Utils
                         writer.Write(len);
                         writer.Write(bytes);
 
-                        //var temp = Block.Unserialize(bytes);
+                        var temp = Block.Unserialize(bytes);
                     }
                 }
             }

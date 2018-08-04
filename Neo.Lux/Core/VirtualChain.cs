@@ -17,25 +17,36 @@ namespace Neo.Lux.Core
 
         private DebugClient _debugger;
 
-        public VirtualChain(NeoAPI api, KeyPair owner)
+        public VirtualChain(NeoAPI api, KeyPair owner) 
         {
-            this.Time = DateTime.UtcNow.ToTimestamp();
+            Reset();
 
+            this.Time = DateTime.UtcNow.ToTimestamp();
             var scripthash = new UInt160(owner.signatureHash.ToArray());
 
             var txs = new List<Transaction>();
-            foreach (var entry in NeoAPI.Assets)
+            foreach (var entry in _assetMap)
             {
-                var symbol = entry.Key;
-                var assetID = NeoAPI.GetAssetID(symbol);
-                _assetMap[assetID] = new Asset() { hash = new UInt256(assetID), name = symbol };
-
+                var assetID = entry.Key;
                 var tx = new Transaction();
                 tx.outputs = new Transaction.Output[] { new Transaction.Output() { assetID = assetID, scriptHash = scripthash, value = 1000000000 } };
                 tx.inputs = new Transaction.Input[] { };
                 txs.Add(tx);
             }
             GenerateBlock(txs);
+        }
+
+        protected override void Reset()
+        {
+            base.Reset();
+
+            foreach (var entry in NeoAPI.Assets)
+            {
+                var symbol = entry.Key;
+                var assetID = NeoAPI.GetAssetID(symbol);
+                _assetMap[assetID] = new Asset() { hash = new UInt256(assetID), name = symbol };
+            }
+
         }
 
         public void AttachDebugger(DebugClient debugger)

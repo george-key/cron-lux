@@ -97,7 +97,7 @@ namespace Neo.Lux.Core
 
         protected Dictionary<UInt160, Account> _accountMap = new Dictionary<UInt160, Account>();
 
-        private Dictionary<UInt256, List<Notification>> notifications = new Dictionary<UInt256, List<Notification>>();
+        private Dictionary<UInt256, List<Notification>> _notifications = new Dictionary<UInt256, List<Notification>>();
 
         public bool VerificateTransactions = true;
 
@@ -202,6 +202,8 @@ namespace Neo.Lux.Core
 
         private void ExecuteTransaction(Transaction tx)
         {
+            Logger(".................................");
+            Logger("Transaction " + tx.Hash);
             if (tx.inputs != null)
             {
                 foreach (var input in tx.inputs)
@@ -338,8 +340,8 @@ namespace Neo.Lux.Core
 
         public List<Notification> GetNotifications(Transaction tx)
         {
-            if (tx != null && notifications.ContainsKey(tx.Hash)){
-                return notifications[tx.Hash];
+            if (tx != null && _notifications.ContainsKey(tx.Hash)){
+                return _notifications[tx.Hash];
             }
 
             return null;
@@ -418,14 +420,21 @@ namespace Neo.Lux.Core
             }
         }
 
-        internal void SetBlocks(Dictionary<uint, Block> blocks)
+        protected virtual void Reset()
         {
             _blocks.Clear();
             _blockMap.Clear();
             _txMap.Clear();
             _accountMap.Clear();
+            _assetMap.Clear();
 
-            notifications.Clear();
+            _notifications.Clear();
+        }
+
+        internal void SetBlocks(Dictionary<uint, Block> blocks)
+        {
+            Reset();
+
             for (uint height =0; height<blocks.Count; height++)
             {
                 AddBlock(blocks[height]);
@@ -503,14 +512,14 @@ namespace Neo.Lux.Core
                 List<Notification> list;
                 var tx = (Transaction)engine.ScriptContainer;
 
-                if (notifications.ContainsKey(tx.Hash))
+                if (_notifications.ContainsKey(tx.Hash))
                 {
-                    list = notifications[tx.Hash];
+                    list = _notifications[tx.Hash];
                 }
                 else
                 {
                     list = new List<Notification>();
-                    notifications[tx.Hash] = list;
+                    _notifications[tx.Hash] = list;
                 }
 
                 list.Add(new Notification(tx.Hash, eventName, eventArgs.ToArray()));
