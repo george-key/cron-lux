@@ -9,19 +9,64 @@ using System.Text;
 
 namespace Neo.Lux.Core
 {
+    public interface ChainTime
+    {
+        uint GetTime();
+        void AdvanceTime();
+    }
+
+    internal class RealTime : ChainTime
+    {
+        public uint GetTime()
+        {
+            return DateTime.UtcNow.ToTimestamp();
+        }
+
+        public void AdvanceTime()
+        {
+
+        }
+    }
+
+    internal class SimulatedTime : ChainTime
+    {
+        public uint Time;
+
+        public SimulatedTime()
+        {
+            this.Time = DateTime.UtcNow.ToTimestamp();
+        }
+
+        public uint GetTime()
+        {
+            return Time;
+        }
+
+        public void AdvanceTime()
+        {
+            this.Time += 15;
+        }
+    }
+
     public class VirtualChain : Chain
     {
-        public uint Time { get; set; }
+        public readonly ChainTime Time;
 
         public bool HasDebugger => _debugger != null;
 
         private DebugClient _debugger;
 
-        public VirtualChain(NeoAPI api, KeyPair owner) 
+        public VirtualChain(NeoAPI api, KeyPair owner, ChainTime time = null) 
         {
             Reset();
 
-            this.Time = DateTime.UtcNow.ToTimestamp();
+            if (time == null)
+            {
+                time = new RealTime();
+            }
+
+            this.Time = time;
+
             var scripthash = new UInt160(owner.signatureHash.ToArray());
 
             var txs = new List<Transaction>();
@@ -46,7 +91,6 @@ namespace Neo.Lux.Core
                 var assetID = NeoAPI.GetAssetID(symbol);
                 _assetMap[assetID] = new Asset() { hash = new UInt256(assetID), name = symbol };
             }
-
         }
 
         public void AttachDebugger(DebugClient debugger)
@@ -141,7 +185,7 @@ namespace Neo.Lux.Core
 
         protected override uint GetTime()
         {
-            return this.Time;
+            return this.Time.GetTime();
         }
 
         public bool GenerateBlock(IEnumerable<Transaction> transactions)
@@ -153,7 +197,7 @@ namespace Neo.Lux.Core
             block.Height = (uint)_blocks.Count;
             block.PreviousHash = _blocks.Count > 0 ? _blocks[(uint)(_blocks.Count - 1)].Hash : null;
             //block.MerkleRoot = 
-            block.Timestamp = this.Time;
+            block.Timestamp = this.Time.GetTime();
             //block.Validator = 0;
             block.Version = 0;
             block.transactions = new Transaction[transactions.Count()];
@@ -170,7 +214,7 @@ namespace Neo.Lux.Core
                 return false;
             }
 
-            this.Time += (10 + (uint)(block.ConsensusData % 5));
+            this.Time.AdvanceTime();
 
             return true;
         }
