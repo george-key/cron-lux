@@ -58,7 +58,8 @@ namespace Neo.Lux.VM
 
         public virtual string GetString()
         {
-            return Encoding.UTF8.GetString(GetByteArray());
+            var temp = GetByteArray();
+            return (temp != null && temp.Length > 0 ? Encoding.UTF8.GetString(GetByteArray()) : null);
         }
 
         public virtual byte GetByte()
