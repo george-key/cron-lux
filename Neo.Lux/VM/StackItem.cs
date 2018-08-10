@@ -40,7 +40,12 @@ namespace Neo.Lux.VM
 
         public virtual bool GetBoolean()
         {
-            return GetByteArray().Any(p => p != 0);
+            var temp = GetByteArray();
+            if (temp == null)
+            {
+                return false;
+            }
+            return temp.Any(p => p != 0);
         }
 
         public abstract byte[] GetByteArray();
