@@ -81,7 +81,7 @@ namespace Neo.Lux.Core
         {
             var result = base.LoadScript(script, rvcount);
 
-            this.Chain.OnLoadScript(this, script);
+            this.Chain.OnVMLoad(this, script);
 
             return result;
         }
@@ -259,12 +259,17 @@ namespace Neo.Lux.Core
             }
         }
 
-        internal virtual void OnLoadScript(ExecutionEngine vm, byte[] script)
+        internal virtual void OnVMLoad(ExecutionEngine vm, byte[] script)
         {
             
         }
 
         protected virtual void OnVMStep(ExecutionEngine vm)
+        {
+
+        }
+
+        protected virtual void OnVMBreak(ExecutionEngine vm)
         {
 
         }
@@ -277,7 +282,15 @@ namespace Neo.Lux.Core
             currentGas = 0;
             vm.LoadScript(tx.script);
 
-            vm.Execute(x => OnVMStep(x));
+            while (!vm.State.HasFlag(VMState.HALT) && !vm.State.HasFlag(VMState.FAULT))
+            {
+                vm.Execute(x => OnVMStep(x));
+                if (vm.State.HasFlag(VMState.BREAK))
+                {
+                    OnVMBreak(vm);
+                }
+            }
+            
 
             if (vm.State == VMState.HALT)
             {

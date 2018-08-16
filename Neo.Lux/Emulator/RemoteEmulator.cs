@@ -250,6 +250,30 @@ namespace Neo.Lux.Emulator
             }
         }
 
+        public void AddBreakpoint(UInt160 contractHash, uint offset)
+        {
+            try
+            {
+                var response = DoRequest("AddBreakpoint", $"{contractHash.ToArray().ByteToHex()}:{offset}");
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
+        }
+
+        public void RemoveBreakpoint(UInt160 contractHash, uint offset)
+        {
+            try
+            {
+                var response = DoRequest("RemoveBreakpoint", $"{contractHash}:{offset}");
+            }
+            catch (EmulatorException e)
+            {
+                throw e;
+            }
+        }
+
         protected override bool SendTransaction(Transaction tx)
         {
             try

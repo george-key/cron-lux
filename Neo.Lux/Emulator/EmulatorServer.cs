@@ -144,6 +144,40 @@ namespace Neo.Lux.Emulator
                         break;
                     }
 
+                case "AddBreakpoint":
+                    {
+                        try
+                        {
+                            var temp = arg.Split(':');
+                            var hash = new UInt160(temp[0].HexToBytes());
+                            var offset = uint.Parse(temp[1]);
+
+                            this.emulator.Chain.AddBreakpoint(hash, offset);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                        break;
+                    }
+
+                case "RemoveBreakpoint":
+                    {
+                        try
+                        {
+                            var temp = arg.Split(':');
+                            var hash = new UInt160(temp[0].HexToBytes());
+                            var offset = uint.Parse(temp[1]);
+
+                            this.emulator.Chain.RemoveBreakpoint(hash, offset);
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
+                        break;
+                    }
+
                 default:
                     {
                         result.AddField("error", "invalid method");

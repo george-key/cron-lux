@@ -4,21 +4,22 @@ using System.Text;
 
 using Neo.Lux.VM;
 using Neo.Lux.Utils;
+using Neo.Lux.Cryptography;
 
 namespace Neo.Lux.Debugger
 {
-    public class DebugClient: IDisposable
+    public class DebuggerClient: IDisposable
     {
         private TcpClient _client;
         private NetworkStream _stream;
 
         public bool IsConnected => _client != null;
 
-        public DebugClient()
+        public DebuggerClient()
         {
             try
             {
-                this._client = new TcpClient(DebugServer.SERVER_IP, DebugServer.PORT_NO);
+                this._client = new TcpClient(DebuggerServer.SERVER_IP, DebuggerServer.PORT_NO);
                 _stream = _client.GetStream();
             }
             catch
@@ -62,6 +63,19 @@ namespace Neo.Lux.Debugger
             }
 
             string debuggerData = $"EVENT,{name}#\n";
+            byte[] bytesToSend = UTF8Encoding.UTF8.GetBytes(debuggerData);
+
+            _stream.Write(bytesToSend, 0, bytesToSend.Length);
+        }
+
+        public void SendBreak(UInt160 script, uint offset)
+        {
+            if (!IsConnected)
+            {
+                return;
+            }
+
+            string debuggerData = $"BREAK,{script},{offset}#\n";
             byte[] bytesToSend = UTF8Encoding.UTF8.GetBytes(debuggerData);
 
             _stream.Write(bytesToSend, 0, bytesToSend.Length);

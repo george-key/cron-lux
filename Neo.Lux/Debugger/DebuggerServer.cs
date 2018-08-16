@@ -16,12 +16,12 @@ namespace Neo.Lux.Debugger
         public int offset;
     }
 
-    public abstract class DebugServer
+    public abstract class DebuggerServer
     {
         public const int PORT_NO = 4130;
         public const string SERVER_IP = "127.0.0.1";
 
-        public DebugServer()
+        public DebuggerServer()
         {
         }
 

@@ -54,7 +54,7 @@ namespace Neo.Lux.Core
 
         public bool HasDebugger => _debugger != null;
 
-        private DebugClient _debugger;
+        private DebuggerClient _debugger;
 
         public VirtualChain(NeoAPI api, KeyPair owner, ChainTime time = null) 
         {
@@ -93,7 +93,7 @@ namespace Neo.Lux.Core
             }
         }
 
-        public void AttachDebugger(DebugClient debugger)
+        public void AttachDebugger(DebuggerClient debugger)
         {
             this._debugger = debugger;
         }
@@ -103,7 +103,17 @@ namespace Neo.Lux.Core
             this._debugger = null;
         }
 
-        internal override void OnLoadScript(ExecutionEngine vm, byte[] script)
+        protected override void OnVMBreak(ExecutionEngine vm)
+        {
+            base.OnVMBreak(vm);
+
+            if (_debugger != null)
+            {
+                _debugger.SendBreak(vm.CurrentContext.ScriptHash, (uint)vm.CurrentContext.InstructionPointer);
+            }
+        }
+
+        internal override void OnVMLoad(ExecutionEngine vm, byte[] script)
         {
             var context = vm.CallingContext;
             if (context != null)
@@ -118,7 +128,17 @@ namespace Neo.Lux.Core
                 Logger("Inputs: " + sb.ToString());
             }
 
-            base.OnLoadScript(vm, script);
+            base.OnVMLoad(vm, script);
+
+            var hash = script.ToScriptHash();
+            var hash_bytes = hash.ToArray();
+            foreach (var entry in _breakpoints)
+            {
+                if (entry.script == hash)
+                {
+                    vm.AddBreakPoint(hash_bytes, entry.offset);
+                }
+            }
 
             if (_debugger != null)
             {
@@ -134,6 +154,24 @@ namespace Neo.Lux.Core
             {
                 _debugger.Step(vm);
             }
+        }
+
+        public struct Breakpoint
+        {
+            public UInt160 script;
+            public uint offset;
+        }
+
+        private List<Breakpoint> _breakpoints = new List<Breakpoint>();
+
+        public void AddBreakpoint(UInt160 script, uint offset)
+        {
+            _breakpoints.Add(new Breakpoint() { script = script, offset = offset });
+        }
+
+        public void RemoveBreakpoint(UInt160 script, uint offset)
+        {
+            _breakpoints.RemoveAll(x => x.script == script && x.offset == offset);
         }
 
         private Dictionary<UInt160, UInt160> _witnessMap = new Dictionary<UInt160, UInt160>();
