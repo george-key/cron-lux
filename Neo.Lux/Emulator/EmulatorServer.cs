@@ -189,7 +189,14 @@ namespace Neo.Lux.Emulator
             return json;
         }
 
-        public void Start(Action callback) { 
+        private bool running;
+
+        public bool Start(Action callback) { 
+
+            if (running)
+            {
+                return false;
+            }
 
             // Start listening for client requests.
             server.Start();
@@ -197,8 +204,8 @@ namespace Neo.Lux.Emulator
             // Buffer for reading data
             Byte[] bytes = new Byte[1024*64];
 
-            // Enter the listening loop.
-            while (true)
+            running = true;
+            while (running)
             {
                 try
                 {
@@ -248,8 +255,23 @@ namespace Neo.Lux.Emulator
                 }
                 
             }
-           // Stop listening for new clients.
+           
+            // Stop listening for new clients.
            server.Stop();
+           return true;
+        }
+
+        public bool Stop()
+        {
+            if (running)
+            {
+                running = false;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
