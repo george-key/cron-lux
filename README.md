@@ -249,7 +249,9 @@ NEOLux supports some advanced transaction operations specially useful for those 
 
 ## Withdrawing NEO from an ICO contract address
 
-After an ICO finishes, it is necessary to withdraw the received funds outside of the contract address. Now the problem is, for contracts the private key is not known.
+After an ICO finishes, it is necessary to withdraw the received funds outside of the contract address. 
+Now the problem is, for smart contracts the private key is not known, since the smart contract address is derived from the hash of it's own code.
+NEOLux provides some methods to do withdrawals from smart contracts. Once the funds are moved to a normal address, you have full access to them.
 
 ```c#            
 // first read the AVM bytecode from the disk. This AVM must be exactly the same deployed in the main net
