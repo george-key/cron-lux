@@ -14,7 +14,7 @@ namespace Neo.Lux.Debugger
     {
         public UInt160 contractHash;
         public string operation;
-        public List<object> arguments = new List<object>();
+        public object[] arguments;
     }
 
     public class ScriptDeployment
@@ -47,6 +47,51 @@ namespace Neo.Lux.Debugger
 
         }
 
+        private object[] PackArguments(List<AVMInstruction> instructions, ref int index)
+        {
+            var argCount = 1 + ((byte)instructions[index].opcode - (byte)OpCode.PUSH1);
+            var arguments = new List<object>();
+            while (argCount > 0)
+            {
+                index--;
+                if (instructions[index].opcode >= OpCode.PUSHBYTES1 && instructions[index].opcode <= OpCode.PUSHBYTES75)
+                {
+                    arguments.Add(instructions[index].data);
+                }
+                else
+                if (instructions[index].opcode >= OpCode.PUSH1 && instructions[index].opcode <= OpCode.PUSH16)
+                {
+                    var n = new BigInteger(1 + (instructions[index].opcode - OpCode.PUSH1));
+                    arguments.Add(n);
+                }
+                else
+                if (instructions[index].opcode == OpCode.PUSH0)
+                {
+                    arguments.Add(new BigInteger(0));
+                }
+                else
+                if (instructions[index].opcode == OpCode.PUSHM1)
+                {
+                    arguments.Add(new BigInteger(-1));
+                }
+                else
+                if (instructions[index].opcode == OpCode.PACK)
+                {
+                    index--;
+                    var array = PackArguments(instructions, ref index);
+                    arguments.Add(array);
+                }
+                else
+                {
+                    throw new Exception("Invalid arg type");
+                }
+
+                argCount--;
+            }
+
+            return arguments.ToArray();
+        }
+
         public ScriptInspector(byte[] script, Func<UInt160, bool> filter)
         {
             var instructions = NeoTools.Disassemble(script);
@@ -71,38 +116,7 @@ namespace Neo.Lux.Debugger
 
 
                     int index = i - 3;
-                    var argCount = 1 + ((byte)instructions[index].opcode - (byte)OpCode.PUSH1);
-
-                    while (argCount > 0)
-                    {
-                        index--;
-                        if (instructions[index].opcode >= OpCode.PUSHBYTES1 && instructions[index].opcode <= OpCode.PUSHBYTES75)
-                        {
-                            call.arguments.Add(instructions[index].data);
-                        }
-                        else
-                        if (instructions[index].opcode >= OpCode.PUSH1 && instructions[index].opcode <= OpCode.PUSH16)
-                        {
-                            var n = new BigInteger(1 + (instructions[index].opcode - OpCode.PUSH1));
-                            call.arguments.Add(n);
-                        }
-                        else
-                        if (instructions[index].opcode == OpCode.PUSH0)
-                        {
-                            call.arguments.Add(new BigInteger(0));
-                        }
-                        else
-                        if (instructions[index].opcode == OpCode.PUSHM1)
-                        {
-                            call.arguments.Add(new BigInteger(-1));
-                        }
-                        else
-                        {
-                            throw new Exception("Invalid arg type");
-                        }
-
-                        argCount--;
-                    }
+                    call.arguments = PackArguments(instructions, ref index);
 
                     _calls.Add(call);
                 }
