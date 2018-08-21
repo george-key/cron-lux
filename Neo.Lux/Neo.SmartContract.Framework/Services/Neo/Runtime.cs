@@ -36,5 +36,12 @@ namespace Neo.SmartContract.Framework.Services.Neo
         public static void Log(string message) {
             Console.WriteLine("LOG: " + message);
         }
+
+        public static Func<string, object[], object> CallHandler = null;
+
+        public static object Call(string operation, object[] args)
+        {
+            return CallHandler(operation, args);
+        }
     }
 }
