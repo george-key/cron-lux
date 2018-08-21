@@ -1,4 +1,7 @@
-﻿using System.Numerics;
+﻿using Neo.Lux.Utils;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Text;
 
 namespace Neo.SmartContract.Framework.Services.Neo
 {
@@ -9,25 +12,27 @@ namespace Neo.SmartContract.Framework.Services.Neo
             get;
         }
 
-        public static byte[] Get(StorageContext context, byte[] key){ return null; }
+        private static Dictionary<byte[], byte[]> _storage = new Dictionary<byte[], byte[]>(new ByteArrayComparer());
 
-        public static byte[] Get(StorageContext context, string key){ return null; }
+        public static byte[] Get(StorageContext context, byte[] key){ return _storage.ContainsKey(key)? _storage[key]: new byte[0]; }
 
-        public static void Put(StorageContext context, byte[] key, byte[] value){}
+        public static byte[] Get(StorageContext context, string key){ return Get(context, Encoding.UTF8.GetBytes(key)); }
 
-        public static void Put(StorageContext context, byte[] key, BigInteger value){}
+        public static void Put(StorageContext context, byte[] key, byte[] value){ if (value == null) value = new byte[0];  _storage[key] = value; }
 
-        public static void Put(StorageContext context, byte[] key, string value){}
+        public static void Put(StorageContext context, byte[] key, BigInteger value){ Put(context, key, value.ToByteArray()); }
 
-        public static void Put(StorageContext context, string key, byte[] value){}
+        public static void Put(StorageContext context, byte[] key, string value){ Put(context, key, Encoding.UTF8.GetBytes(value)); }
 
-        public static void Put(StorageContext context, string key, BigInteger value){}
+        public static void Put(StorageContext context, string key, byte[] value){ Put(context, Encoding.UTF8.GetBytes(key), value); }
 
-        public static void Put(StorageContext context, string key, string value){}
+        public static void Put(StorageContext context, string key, BigInteger value){ Put(context, Encoding.UTF8.GetBytes(key), value.ToByteArray()); }
 
-        public static void Delete(StorageContext context, byte[] key){}
+        public static void Put(StorageContext context, string key, string value){ Put(context, Encoding.UTF8.GetBytes(key), Encoding.UTF8.GetBytes(value)); }
 
-        public static void Delete(StorageContext context, string key){}
+        public static void Delete(StorageContext context, byte[] key){ if (_storage.ContainsKey(key)) _storage.Remove(key); }
+
+        public static void Delete(StorageContext context, string key){ Delete(context, Encoding.UTF8.GetBytes(key)); }
 
         public static Iterator<byte[], byte[]> Find(StorageContext context, byte[] prefix){ return null; }
 

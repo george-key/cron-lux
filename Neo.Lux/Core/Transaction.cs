@@ -2,6 +2,7 @@
 using Neo.Lux.Cryptography.ECC;
 using Neo.Lux.Utils;
 using Neo.Lux.VM;
+using Neo.SmartContract.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -132,24 +133,20 @@ namespace Neo.Lux.Core
         InvocationTransaction = 0xd1
     }
 
-    public interface IInteropInterface
-    {
-    }
-
-    public interface IScriptContainer : IInteropInterface
+    public interface IScriptContainer : IApiInterface
     {
         byte[] GetMessage();
     }
 
     public class Transaction : IScriptContainer
     {
-        public class Input : IInteropInterface
+        public class Input : IApiInterface
         {
             public UInt256 prevHash;
             public uint prevIndex;
         }
 
-        public class Output : IInteropInterface
+        public class Output : IApiInterface
         {
             public UInt160 scriptHash;
             public byte[] assetID;

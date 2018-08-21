@@ -16,20 +16,20 @@ namespace Neo.Lux.Emulator
 {
     public class EmulatorServer
     {
-        private Emulator emulator;
-        private TcpListener server;
+        private Emulator _emulator;
+        private TcpListener _server;
 
         public Dictionary<string, UInt160> scriptMap = new Dictionary<string, UInt160>();
 
         public EmulatorServer(Emulator emulator, int port)
         {
-            this.emulator = emulator;
+            this._emulator = emulator;
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
             
             // TcpListener server = new TcpListener(port);
-            server = new TcpListener(IPAddress.Any, port);
+            _server = new TcpListener(IPAddress.Any, port);
         }
 
         private string ExecuteRequest(string method, string arg)
@@ -40,14 +40,14 @@ namespace Neo.Lux.Emulator
             {
                 case "GetChainHeight":
                     {
-                        result.AddField("height", this.emulator.GetBlockHeight());
+                        result.AddField("height", this._emulator.GetBlockHeight());
                         break;
                     }
 
                 case "GetBlockByHeight":
                     {
                         var height = uint.Parse(arg);
-                        var block = emulator.GetBlock(height);
+                        var block = _emulator.GetBlock(height);
                         var bytes = block.Serialize();
                         result.AddField("block", bytes.ByteToHex());
                         break;
@@ -56,7 +56,7 @@ namespace Neo.Lux.Emulator
                 case "GetBlockByHash":
                     {
                         var hash = new UInt256(arg.HexToBytes());
-                        var block = emulator.GetBlock(hash);
+                        var block = _emulator.GetBlock(hash);
                         var bytes = block.Serialize();
                         result.AddField("block", bytes.ByteToHex());
                         break;
@@ -71,7 +71,7 @@ namespace Neo.Lux.Emulator
 
                 case "GetAssetBalancesOf":
                     {
-                        var assets = emulator.GetAssetBalancesOf(arg);
+                        var assets = _emulator.GetAssetBalancesOf(arg);
                         int index = 0;
                         foreach (var entry in assets)
                         {
@@ -87,7 +87,7 @@ namespace Neo.Lux.Emulator
 
                 case "GetUnspent":
                     {
-                        var unspents = emulator.GetUnspent(arg);
+                        var unspents = _emulator.GetUnspent(arg);
                         int index = 0;
                         foreach (var entry in unspents)
                         {
@@ -116,7 +116,7 @@ namespace Neo.Lux.Emulator
                 case "SendTransaction":
                     {
                         var bytes = arg.HexToBytes();
-                        var success = emulator.SendRawTransaction(bytes);
+                        var success = _emulator.SendRawTransaction(bytes);
                         result.AddField("success", success);
                         break;
                     }
@@ -125,7 +125,7 @@ namespace Neo.Lux.Emulator
                     {
                         var script = arg.HexToBytes();
 
-                        var obj = emulator.InvokeScript(script);
+                        var obj = _emulator.InvokeScript(script);
 
                         using (var wstream = new MemoryStream())
                         {
@@ -152,7 +152,7 @@ namespace Neo.Lux.Emulator
                             var hash = new UInt160(temp[0].HexToBytes());
                             var offset = uint.Parse(temp[1]);
 
-                            this.emulator.Chain.AddBreakpoint(hash, offset);
+                            this._emulator.Chain.AddBreakpoint(hash, offset);
                         }
                         catch
                         {
@@ -169,7 +169,7 @@ namespace Neo.Lux.Emulator
                             var hash = new UInt160(temp[0].HexToBytes());
                             var offset = uint.Parse(temp[1]);
 
-                            this.emulator.Chain.RemoveBreakpoint(hash, offset);
+                            this._emulator.Chain.RemoveBreakpoint(hash, offset);
                         }
                         catch
                         {
@@ -199,7 +199,7 @@ namespace Neo.Lux.Emulator
             }
 
             // Start listening for client requests.
-            server.Start();
+            _server.Start();
 
             // Buffer for reading data
             Byte[] bytes = new Byte[1024*64];
@@ -213,7 +213,7 @@ namespace Neo.Lux.Emulator
 
                     // Perform a blocking call to accept requests.
                     // You could also user server.AcceptSocket() here.
-                    TcpClient client = server.AcceptTcpClient();
+                    TcpClient client = _server.AcceptTcpClient();
                     Console.WriteLine("Connected!");
 
                     // Get a stream object for reading and writing
@@ -257,7 +257,7 @@ namespace Neo.Lux.Emulator
             }
            
             // Stop listening for new clients.
-           server.Stop();
+           _server.Stop();
            return true;
         }
 

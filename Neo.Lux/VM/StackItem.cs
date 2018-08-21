@@ -1,5 +1,6 @@
 ﻿using Neo.Lux.Core;
 using Neo.Lux.VM.Types;
+using Neo.SmartContract.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Neo.Lux.VM
             return false;
         }
 
-        public static StackItem FromInterface(IInteropInterface value)
+        public static StackItem FromInterface(IApiInterface value)
         {
             return new InteropInterface(value);
         }

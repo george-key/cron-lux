@@ -1,4 +1,6 @@
 ﻿using Neo.Lux.Cryptography;
+using Neo.Lux.VM;
+using Neo.Lux.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,6 +10,8 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using Neo.SmartContract.Framework;
+using System.Reflection;
 
 namespace Neo.Lux.Utils
 {
@@ -405,6 +409,92 @@ namespace Neo.Lux.Utils
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
         }
 
+        public static StackItem ToStackItem(this object obj)
+        {
+            StackItem item;
+
+            if (obj == null)
+            {
+                item = new byte[0];
+            }
+            else
+            {
+                var type = obj.GetType();
+                if (obj is BigInteger)
+                {
+                    item = (BigInteger)obj;
+                }
+                else
+                if (obj is byte)
+                {
+                    item = new BigInteger((byte)obj);
+                }
+                else
+                if (obj is sbyte)
+                {
+                    item = new BigInteger((sbyte)obj);
+                }
+                else
+                if (obj is int)
+                {
+                    item = new BigInteger((int)obj);
+                }
+                else
+                if (obj is short)
+                {
+                    item = new BigInteger((short)obj);
+                }
+                else
+                if (obj is ushort)
+                {
+                    item = new BigInteger((ushort)obj);
+                }
+                else
+                if (obj is uint)
+                {
+                    item = new BigInteger((uint)obj);
+                }
+                else
+                if (obj is long)
+                {
+                    item = new BigInteger((long)obj);
+                }
+                else
+                if (obj is ulong)
+                {
+                    item = new BigInteger((ulong)obj);
+                }
+                else
+                if (obj is byte[])
+                {
+                    item = (byte[])obj;
+                }
+                else
+                if (obj is bool)
+                {
+                    item = (bool)obj;
+                }
+                else
+                if (type.IsValueType && !type.IsEnum)
+                {
+                    var items = new List<StackItem> ();
+
+                    var  fields = type.GetFields();
+                    foreach (var field in fields){
+                        object val = field.GetValue(obj);
+                        items.Add(val.ToStackItem());
+                    }
+
+                    item = new Neo.Lux.VM.Types.Struct(items);
+                }
+                else
+                {
+                    throw new Exception("something bad happened");
+                }
+            }
+
+            return item;
+        }
 
     }
 

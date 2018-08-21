@@ -1,6 +1,7 @@
 ﻿using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
 using Neo.Lux.VM;
+using Neo.SmartContract.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Text;
 
 namespace Neo.Lux.Core
 {
-    public class Storage: IInteropInterface
+    public class Storage: IApiInterface
     {
         public Dictionary<byte[], byte[]> entries = new Dictionary<byte[], byte[]>(new ByteArrayComparer());
 
@@ -455,7 +456,7 @@ namespace Neo.Lux.Core
         }
 
         #region VM METHODS
-        private static T GetInteropFromStack<T>(ExecutionEngine engine) where T : class, IInteropInterface
+        private static T GetInteropFromStack<T>(ExecutionEngine engine) where T : class, IApiInterface
         {
             if (engine.CurrentContext.EvaluationStack.Count == 0)
             {

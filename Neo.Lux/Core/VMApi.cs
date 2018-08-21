@@ -1,6 +1,7 @@
 ﻿using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
 using Neo.Lux.VM;
+using Neo.SmartContract.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +21,7 @@ namespace Neo.Lux.Core
     public static class VMAPI
     {
 
-        public static T GetInteropFromStack<T>(this ExecutionEngine engine) where T : class, IInteropInterface
+        public static T GetInteropFromStack<T>(this ExecutionEngine engine) where T : class, IApiInterface
         {
             if (engine.CurrentContext.EvaluationStack.Count == 0)
             {

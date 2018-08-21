@@ -1,13 +1,14 @@
 ﻿using Neo.Lux.Core;
+using Neo.SmartContract.Framework;
 using System;
 
 namespace Neo.Lux.VM.Types
 {
     public class InteropInterface : StackItem
     {
-        private IInteropInterface _object;
+        private IApiInterface _object;
 
-        public InteropInterface(IInteropInterface value)
+        public InteropInterface(IApiInterface value)
         {
             this._object = value;
         }
@@ -36,7 +37,7 @@ namespace Neo.Lux.VM.Types
             return _object.GetType();
         }
 
-        public T GetInterface<T>() where T : class, IInteropInterface
+        public T GetInterface<T>() where T : class, IApiInterface
         {
             return _object as T;
         }

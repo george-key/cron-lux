@@ -1,4 +1,5 @@
 ﻿using Neo.Lux.Utils;
+using Neo.SmartContract.Framework;
 using System.IO;
 
 namespace Neo.Lux.Core
@@ -18,7 +19,7 @@ namespace Neo.Lux.Core
         Application = 0x10
     }
 
-    public class Contract: IInteropInterface
+    public class Contract: IApiInterface
     {
         public byte[] script;
         public byte[] parameterList;

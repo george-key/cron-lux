@@ -1,11 +1,12 @@
 ﻿using Neo.Lux.Cryptography;
 using Neo.Lux.Utils;
+using Neo.SmartContract.Framework;
 using System;
 using System.IO;
 
 namespace Neo.Lux.Core
 {
-    public class Block : IInteropInterface
+    public class Block : IApiInterface
     {
         public uint Version;
         public uint Height;
