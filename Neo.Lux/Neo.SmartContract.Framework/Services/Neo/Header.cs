@@ -2,44 +2,20 @@
 {
     public class Header : IScriptContainer
     {
-        public byte[] Hash
-        {
-            get;
-        }
+        public byte[] Hash;
 
-        public uint Version
-        {
-            get;
-        }
+        public uint Version;
 
-        public byte[] PrevHash
-        {
-            get;
-        }
+        public byte[] PrevHash;
 
-        public byte[] MerkleRoot
-        {
-            get;
-        }
+        public byte[] MerkleRoot;
 
-        public uint Timestamp
-        {
-            get;
-        }
+        public uint Timestamp;
 
-        public uint Index
-        {
-            get;
-        }
+        public uint Index;
 
-        public ulong ConsensusData
-        {
-            get;
-        }
+        public ulong ConsensusData;
 
-        public byte[] NextConsensus
-        {
-            get;
-        }
+        public byte[] NextConsensus;
     }
 }

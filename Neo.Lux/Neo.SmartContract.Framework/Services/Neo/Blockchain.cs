@@ -1,14 +1,20 @@
-﻿namespace Neo.SmartContract.Framework.Services.Neo
+﻿using System.Collections.Generic;
+
+namespace Neo.SmartContract.Framework.Services.Neo
 {
     public static class Blockchain
     {
-        public static uint GetHeight() { return 0; }
+        public static uint Height = 0;
+        public static Dictionary<uint, Header> Headers = new Dictionary<uint, Header>();
+        public static Dictionary<uint, Block> Blocks = new Dictionary<uint, Block>();
 
-        public static Header GetHeader(uint height) { return null; }
+        public static uint GetHeight() => Height;
+
+        public static Header GetHeader(uint height) => Headers[height];
 
         public static Header GetHeader(byte[] hash) { return null; }
 
-        public static Block GetBlock(uint height) { return null; }
+        public static Block GetBlock(uint height) => Blocks[height];
 
         public static Block GetBlock(byte[] hash) { return null; }
 
