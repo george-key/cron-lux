@@ -409,6 +409,28 @@ namespace Neo.Lux.Utils
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
         }
 
+        public static object FromStackItem(this StackItem item)
+        {
+            if (item is VM.Types.Integer)
+            {
+                return item.GetBigInteger();
+            }
+            else
+            if (item is VM.Types.Boolean)
+            {
+                return item.GetBoolean();
+            }
+            else
+            if (item is VM.Types.ByteArray)
+            {
+                return item.GetByteArray();
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public static StackItem ToStackItem(this object obj)
         {
             StackItem item;

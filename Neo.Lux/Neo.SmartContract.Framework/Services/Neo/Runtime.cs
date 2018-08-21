@@ -41,7 +41,11 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
         public static object Call(string operation, object[] args)
         {
-            return CallHandler(operation, args);
+            var temp = System.ExecutionEngine.CallingScriptHash;
+            System.ExecutionEngine.CallingScriptHash = System.ExecutionEngine.ExecutingScriptHash;
+            var result = CallHandler(operation, args);
+            System.ExecutionEngine.CallingScriptHash = temp;
+            return result;
         }
     }
 }

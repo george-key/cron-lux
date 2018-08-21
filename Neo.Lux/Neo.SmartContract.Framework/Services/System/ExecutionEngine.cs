@@ -2,24 +2,12 @@
 {
     public static class ExecutionEngine
     {
-        public static IScriptContainer ScriptContainer
-        {
-            get;
-        }
+        public static IScriptContainer ScriptContainer = null;
 
-        public static byte[] ExecutingScriptHash
-        {
-            get;
-        }
+        public static byte[] ExecutingScriptHash = null;
 
-        public static byte[] CallingScriptHash
-        {
-            get;
-        }
+        public static byte[] CallingScriptHash = null;
 
-        public static byte[] EntryScriptHash
-        {
-            get;
-        }
+        public static byte[] EntryScriptHash = null;
     }
 }
