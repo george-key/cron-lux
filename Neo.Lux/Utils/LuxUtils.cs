@@ -499,12 +499,13 @@ namespace Neo.Lux.Utils
                 if (type.IsArray)
                 {
                     var items = new List<StackItem>();
-                    var array = (object[])obj;
-                    for (int i=0; i<array.Length; i++)
+                    var array = (Array)obj;
+
+                    foreach (var val in array)
                     {
-                        var val = array[i].ToStackItem();
-                        items.Add(val);
+                        items.Add(val.ToStackItem());
                     }
+
                     item = new VM.Types.Array(items);                    
                 }
                 else
