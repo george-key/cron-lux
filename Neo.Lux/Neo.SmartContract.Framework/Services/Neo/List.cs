@@ -1,5 +1,4 @@
-﻿using Neo.SmartContract.Framework;
-using Neo.SmartContract.Framework.Services.System;
+﻿using Neo.SmartContract.Framework.Services.System;
 using System.Numerics;
 
 namespace Neo.SmartContract.Framework.Services.Neo
@@ -7,17 +6,13 @@ namespace Neo.SmartContract.Framework.Services.Neo
     public class List
     {
         private static readonly byte[] count_prefix = "{count}".AsByteArray();
-        private static readonly byte[] element_begin_prefix = new byte[] { (byte)'<' };
-        private static readonly byte[] element_end_prefix = new byte[] { (byte)'>' };
+        private static readonly byte[] global_prefix = "{global}".AsByteArray();
+        public static readonly byte[] element_begin_prefix = new byte[] { (byte)'<' };
+        public static readonly byte[] element_end_prefix = new byte[] { (byte)'>' };
         private readonly byte[] BaseKey;
 
         private List(byte[] name, byte[] hash)
         {
-            if (hash == null || hash.Length != 20)
-            {
-                throw new global::System.ArgumentException();
-            }
-
             this.BaseKey = hash.Concat(name);
         }
 
@@ -28,7 +23,8 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
         public static List FindGlobal(byte[] name)
         {
-            return new List(name, ExecutionEngine.ExecutingScriptHash);
+            //return new List(name, ExecutionEngine.ExecutingScriptHash);
+            return new List(name, global_prefix);
         }
 
         private byte[] CountKey()
@@ -42,7 +38,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
             if (index == 0)
             {
-                right = element_begin_prefix;
+                right = element_begin_prefix.Concat(new byte[] { 0 });
             }
             else
             {

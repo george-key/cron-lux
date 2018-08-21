@@ -6,11 +6,44 @@ using System.Numerics;
 
 namespace Neo.SmartContract.Framework.Services.Neo
 {
+    public class StorageKeyComparer : IEqualityComparer<StorageKey>
+    {
+        public bool Equals(StorageKey left, StorageKey right)
+        {
+            return left.data.SequenceEqual(right.data);
+        }
+
+        public int GetHashCode(StorageKey key)
+        {
+            return key.data.Sum(b => b);
+        }
+    }
+
+    public struct StorageKey
+    {
+        public byte[] data;
+
+        public StorageKey(byte[] data)
+        {
+            this.data = data;
+        }
+
+        public override string ToString()
+        {
+            return StorageContext.ToHumanKey(data);
+        }
+
+        public override int GetHashCode()
+        {
+            return data.GetHashCode();
+        }
+    }
+
     public class StorageContext
     {
         private static Dictionary<byte[], StorageContext> _contexts = new Dictionary<byte[], StorageContext>(new ByteArrayComparer());
 
-        public readonly Dictionary<byte[], byte[]> Entries = new Dictionary<byte[], byte[]>();
+        public readonly Dictionary<StorageKey, byte[]> Entries = new Dictionary<StorageKey, byte[]>(new StorageKeyComparer());
 
         public static StorageContext Find(byte[] hash)
         {
@@ -79,6 +112,14 @@ namespace Neo.SmartContract.Framework.Services.Neo
                 return key.Substring(0).HexToBytes();
             }
 
+            if (key.StartsWith("[") && key.EndsWith("["))
+            {
+                key = key.Substring(1, key.Length - 2);
+                var num = BigInteger.Parse(key);
+                var result = num.ToByteArray();
+                result = new byte[] { (byte)'<' }.Concat(result).Concat(new byte[] { (byte)'>' });
+            }
+
             {
                 var result = global::System.Text.Encoding.ASCII.GetBytes(key);
                 if (forceSep)
@@ -135,17 +176,32 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
                     return null;                    
                 }
-                /*else
+                else
                 if (key[0] == (byte)'<' && key[i] == (byte)'>')
                 {
                     int index = i + 1;
-                    var first = key.Take(index).Skip(1).ToArray();
+                    var first = key.Take(index-1).Skip(1).ToArray();
+
                     var num = new BigInteger(first);
+
+                    var name = $"[{num}]";
+
                     if (i == key.Length - 1)
                     {
-                        return $"[]";
+                        return name;
                     }
-                }*/
+
+                    var temp = key.Skip(index).ToArray();
+
+                    var rest = DecodeKey(temp);
+
+                    if (rest == null)
+                    {
+                        return null;
+                    }
+
+                    return $"{name}{rest}";
+                }
             }
 
             return null;
@@ -168,10 +224,13 @@ namespace Neo.SmartContract.Framework.Services.Neo
                 {
                     return $"{ToHumanKey(address)}.{rest}";
                 }
+            }
 
-                if (IsASCII(key))
+            {
+                var rest = DecodeKey(key);
+                if (rest != null)
                 {
-                    return global::System.Text.Encoding.ASCII.GetString(key);
+                    return rest;
                 }
             }
 
@@ -180,7 +239,8 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
         public byte[] Get(byte[] key)
         {
-            var value = Entries.ContainsKey(key) ? Entries[key] : new byte[0];
+            var sKey = new StorageKey(key);
+            var value = Entries.ContainsKey(sKey) ? Entries[sKey] : new byte[0];
 
             Log($"GET: {ToHumanKey(key)} => {ToHumanValue(key, value)}");
 
@@ -189,18 +249,18 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
         public void Put(byte[] key, byte[] value)
         {
-
             Log($"PUT: {ToHumanKey(key)} => {ToHumanValue(key, value)}");
 
-            if (value == null) value = new byte[0]; Entries[key] = value;
+            var sKey = new StorageKey(key);
+            if (value == null) value = new byte[0]; Entries[sKey] = value;
         }
 
         public void Delete(byte[] key)
         {
-
             Log($"DELETE: {ToHumanKey(key)}");
 
-            if (Entries.ContainsKey(key)) Entries.Remove(key);
+            var sKey = new StorageKey(key);
+            if (Entries.ContainsKey(sKey)) Entries.Remove(sKey);
         }
 
     }
