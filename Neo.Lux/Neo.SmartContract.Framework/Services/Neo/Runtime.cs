@@ -48,8 +48,12 @@ namespace Neo.SmartContract.Framework.Services.Neo
             var tempExecuting = System.ExecutionEngine.ExecutingScriptHash;
             System.ExecutionEngine.CallingScriptHash = System.ExecutionEngine.ExecutingScriptHash;
             System.ExecutionEngine.ExecutingScriptHash = hash;
+
             var result = CallHandler(operation, args);
+
             System.ExecutionEngine.CallingScriptHash = tempCall;
+            System.ExecutionEngine.ExecutingScriptHash = tempExecuting;
+
             return result;
         }
     }

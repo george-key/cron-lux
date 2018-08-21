@@ -41,9 +41,16 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
     public class StorageContext
     {
+        public readonly byte[] hash;
+
         private static Dictionary<byte[], StorageContext> _contexts = new Dictionary<byte[], StorageContext>(new ByteArrayComparer());
 
         public readonly Dictionary<StorageKey, byte[]> Entries = new Dictionary<StorageKey, byte[]>(new StorageKeyComparer());
+
+        public StorageContext(byte[] hash)
+        {
+            this.hash = hash;
+        }
 
         public static StorageContext Find(byte[] hash)
         {
@@ -52,7 +59,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
                 return _contexts[hash];
             }
 
-            var context = new StorageContext();
+            var context = new StorageContext(hash);
             _contexts[hash] = context;
             return context;
         }
@@ -242,6 +249,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
             var sKey = new StorageKey(key);
             var value = Entries.ContainsKey(sKey) ? Entries[sKey] : new byte[0];
 
+            Log("Context: " + this.hash.ByteToHex());
             Log($"GET: {ToHumanKey(key)} => {ToHumanValue(key, value)}");
 
             return value;
@@ -249,6 +257,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
         public void Put(byte[] key, byte[] value)
         {
+            Log("Context: " + this.hash.ByteToHex());
             Log($"PUT: {ToHumanKey(key)} => {ToHumanValue(key, value)}");
 
             var sKey = new StorageKey(key);
@@ -257,6 +266,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
 
         public void Delete(byte[] key)
         {
+            Log("Context: " + this.hash.ByteToHex());
             Log($"DELETE: {ToHumanKey(key)}");
 
             var sKey = new StorageKey(key);
