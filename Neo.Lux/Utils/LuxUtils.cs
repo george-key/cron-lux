@@ -10,7 +10,6 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
-using Neo.SmartContract.Framework;
 using System.Reflection;
 
 namespace Neo.Lux.Utils
@@ -506,7 +505,7 @@ namespace Neo.Lux.Utils
                         var val = array[i].ToStackItem();
                         items.Add(val);
                     }
-                    item = new Neo.Lux.VM.Types.Array(items);                    
+                    item = new VM.Types.Array(items);                    
                 }
                 else
                 if (type.IsValueType && !type.IsEnum)
@@ -519,7 +518,7 @@ namespace Neo.Lux.Utils
                         items.Add(val.ToStackItem());
                     }
 
-                    item = new Neo.Lux.VM.Types.Struct(items);
+                    item = new VM.Types.Struct(items);
                 }
                 else
                 {

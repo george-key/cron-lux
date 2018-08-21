@@ -8,7 +8,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
     {
         public static TriggerType Trigger => TriggerType.Application;
 
-        public static uint Time => (uint)(DateTime.UtcNow.Ticks/1000);
+        public static uint Time => (uint)(DateTime.UtcNow.Ticks / 1000);
 
         public static bool CheckWitness(byte[] hashOrPubkey) { return true; }
 
@@ -38,13 +38,18 @@ namespace Neo.SmartContract.Framework.Services.Neo
         }
 
         public static Func<string, object[], object> CallHandler = null;
+        public static byte[] CallHash; // HACK!!
 
         public static object Call(string operation, object[] args)
         {
-            var temp = System.ExecutionEngine.CallingScriptHash;
+            byte[] hash = CallHash;
+
+            var tempCall = System.ExecutionEngine.CallingScriptHash;
+            var tempExecuting = System.ExecutionEngine.ExecutingScriptHash;
             System.ExecutionEngine.CallingScriptHash = System.ExecutionEngine.ExecutingScriptHash;
+            System.ExecutionEngine.ExecutingScriptHash = hash;
             var result = CallHandler(operation, args);
-            System.ExecutionEngine.CallingScriptHash = temp;
+            System.ExecutionEngine.CallingScriptHash = tempCall;
             return result;
         }
     }
