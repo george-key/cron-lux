@@ -475,6 +475,18 @@ namespace Neo.Lux.Utils
                     item = (bool)obj;
                 }
                 else
+                if (type.IsArray)
+                {
+                    var items = new List<StackItem>();
+                    var array = (object[])obj;
+                    for (int i=0; i<array.Length; i++)
+                    {
+                        var val = array[i].ToStackItem();
+                        items.Add(val);
+                    }
+                    item = new Neo.Lux.VM.Types.Array(items);                    
+                }
+                else
                 if (type.IsValueType && !type.IsEnum)
                 {
                     var items = new List<StackItem> ();
