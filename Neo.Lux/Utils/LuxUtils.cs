@@ -496,6 +496,11 @@ namespace Neo.Lux.Utils
                     item = (bool)obj;
                 }
                 else
+                if (obj is string)
+                {
+                    item = (byte[])System.Text.Encoding.UTF8.GetBytes((string)obj);
+                }
+                else
                 if (type.IsArray)
                 {
                     var items = new List<StackItem>();
