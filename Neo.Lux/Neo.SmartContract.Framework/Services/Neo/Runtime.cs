@@ -9,7 +9,7 @@ namespace Neo.SmartContract.Framework.Services.Neo
     {
         public static TriggerType Trigger => TriggerType.Application;
 
-        public static uint Time => (uint)(DateTime.UtcNow.Ticks / 1000);
+        public static uint Time => DateTime.UtcNow.ToTimestamp();
 
         public static bool CheckWitness(byte[] hashOrPubkey) { return true; }
 
