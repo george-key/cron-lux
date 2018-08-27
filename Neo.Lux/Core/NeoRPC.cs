@@ -4,29 +4,26 @@ using Neo.Lux.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 
 namespace Neo.Lux.Core
 {
     public abstract class NeoRPC : NeoAPI
     {
         public readonly string neoscanUrl;
-        public readonly int port;
 
-        public NeoRPC(int port, string neoscanURL)
+        public NeoRPC(string neoscanURL)
         {
-            this.port = port;
             this.neoscanUrl = neoscanURL;
         }
 
-        public static NeoRPC ForMainNet()
+        public static NeoRPC ForMainNet(NEONodesKind kind = NEONodesKind.COZ)
         {
-            return new RemoteRPCNode(10332, "http://neoscan.io");
+            return new RemoteRPCNode(10332, "http://neoscan.io", kind);
         }
 
         public static NeoRPC ForTestNet()
         {
-            return new RemoteRPCNode(20332, "https://neoscan-testnet.io");
+            return new RemoteRPCNode(20332, "https://neoscan-testnet.io", NEONodesKind.NEO_ORG);
         }
 
         public static NeoRPC ForPrivateNet()
@@ -190,6 +187,11 @@ namespace Neo.Lux.Core
         public bool SendRawTransaction(string hexTx)
         {
             var response = QueryRPC("sendrawtransaction", new object[] {hexTx });
+            if (response == null)
+            {
+                throw new Exception("Connection failure");
+            }
+
             var result = response.GetBool("result");
             return result;
         }
@@ -309,8 +311,11 @@ namespace Neo.Lux.Core
 
     public class LocalRPCNode : NeoRPC
     {
-        public LocalRPCNode(int port, string neoscanURL) : base(port, neoscanURL)
+        private int port;
+
+        public LocalRPCNode(int port, string neoscanURL) : base(neoscanURL)
         {
+            this.port = port;
         }
 
         protected override string GetRPCEndpoint()
@@ -319,29 +324,69 @@ namespace Neo.Lux.Core
         }
     }
 
+    public enum NEONodesKind
+    {
+        NEO_ORG,
+        COZ,
+        TRAVALA
+    }
+
     public class RemoteRPCNode : NeoRPC
     {
         private int rpcIndex = 0;
 
-        public RemoteRPCNode(int port, string neoscanURL) : base(port, neoscanURL)
+        private string[] nodes;
+
+        public RemoteRPCNode(int port, string neoscanURL, NEONodesKind kind) : base(neoscanURL)
         {
+            switch (kind)
+            {
+                case NEONodesKind.NEO_ORG:
+                    {
+                        nodes = new string[5];
+                        for (int i = 0; i < nodes.Length; i++)
+                        {
+                            nodes[i] = $"http://seed{i}.neo.org:{port}";
+                        }
+                        break;
+                    }
+
+                case NEONodesKind.COZ:
+                    {
+                        if (port == 10331)
+                        {
+                            port = 443;
+                        }
+
+                        nodes = new string[5];
+                        for (int i = 0; i < nodes.Length; i++)
+                        {                            
+                            nodes[i] = $"http://seed{i}.cityofzion.io:{port}";
+                        }
+                        break;
+                    }
+
+                case NEONodesKind.TRAVALA:
+                    {
+                        nodes = new string[5];
+                        for (int i = 0; i < nodes.Length; i++)
+                        {
+                            nodes[i] = $"http://seed{i}.travala.com:{port}";
+                        }
+                        break;
+                    }
+            }
         }
 
         protected override string GetRPCEndpoint()
         {
-            if (rpcIndex == 0)
-            {
-                rpcIndex = 1 + (Environment.TickCount % 5);
-            }
-
-            var url = $"http://seed{rpcIndex}.neo.org:{port}";
             rpcIndex++;
-            if (rpcIndex > 5)
+            if (rpcIndex >= nodes.Length)
             {
-                rpcIndex = 1;
+                rpcIndex = 0;
             }
 
-            return url;
+            return nodes[rpcIndex];
         }
     }
 }
