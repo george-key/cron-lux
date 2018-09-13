@@ -441,10 +441,35 @@ namespace Neo.Lux.Core
         public void GenerateInputsOutputs(KeyPair key, string symbol, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
         {
             var from_script_hash = new UInt160(key.signatureHash.ToArray());
-            GenerateInputsOutputs(from_script_hash, symbol, targets, out inputs, out outputs, system_fee);
+            var info = GetAssetsInfo();
+            var targetAssetID = LuxUtils.ReverseHex(info[symbol]).HexToBytes();
+            if (targets != null)
+                foreach (var t in targets)
+                    if (t.assetID == null)
+                        t.assetID = targetAssetID;
+            //else Console.WriteLine("ASSETID target already existed: " + symbol);
+            GenerateInputsOutputs(from_script_hash, targets, out inputs, out outputs, system_fee);
         }
 
-        public void GenerateInputsOutputs(UInt160 from_script_hash, string symbol, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
+        public void GenerateInputsOutputs(UInt160 key, string symbol, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
+        {
+            var info = GetAssetsInfo();
+            var targetAssetID = LuxUtils.ReverseHex(info[symbol]).HexToBytes();
+            if (targets != null)
+                foreach (var t in targets)
+                    if (t.assetID == null)
+                        t.assetID = targetAssetID;
+            // else  Console.WriteLine("ASSETID target already existed: " + symbol);
+            GenerateInputsOutputs(key, symbol, targets, out inputs, out outputs, system_fee);
+        }
+
+        public void GenerateInputsOutputs(KeyPair key, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
+        {
+            var from_script_hash = new UInt160(key.signatureHash.ToArray());
+            GenerateInputsOutputs(from_script_hash, targets, out inputs, out outputs, system_fee);
+        }
+
+        public void GenerateInputsOutputs(UInt160 from_script_hash, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
         {
             var unspent = GetUnspent(from_script_hash);
             // filter any asset lists with zero unspent inputs
@@ -453,123 +478,166 @@ namespace Neo.Lux.Core
             inputs = new List<Transaction.Input>();
             outputs = new List<Transaction.Output>();
 
-            string assetID;
-
-            var info = GetAssetsInfo();
-            if (info.ContainsKey(symbol))
-            {
-                assetID = info[symbol];
-            }
-            else
-            {
-                throw new NeoException($"{symbol} is not a valid blockchain asset.");
-            }
-
             var from_address = from_script_hash.ToAddress();
+            var info = GetAssetsInfo();
 
-            if (!unspent.ContainsKey(symbol))
+            // dummy tx to self
+            if (targets == null)
             {
-                throw new NeoException($"Not enough {symbol} in address {from_address}");
-            }
+                string assetName = "GAS";
+                string assetID = info[assetName];
+                var targetAssetID = LuxUtils.ReverseHex(assetID).HexToBytes();
+                if (!unspent.ContainsKey(assetName))
+                    throw new NeoException($"Not enough {assetName} in address {from_address}");
 
-            decimal cost = 0;
+                var src = unspent[assetName][0];
+                decimal selected = src.value;
+                // Console.WriteLine("SENDING " + selected + " GAS to source");
 
-            if (targets != null)
-            {
-                foreach (var target in targets)
-                {
-                    if (target.scriptHash.Equals(from_script_hash))
-                    {
-                        throw new NeoException("Target can't be same as input");
-                    }
-
-                    cost += target.value;
-                }
-            }
-
-            var targetAssetID = LuxUtils.ReverseHex(assetID).HexToBytes();
-
-            var sources = unspent[symbol];
-            decimal selected = 0;
-
-            if (lastTransactions.ContainsKey(from_address))
-            {
-                var lastTx = lastTransactions[from_address];
-
-                uint index = 0;
-                if (lastTx.outputs != null)
-                {
-                    foreach (var output in lastTx.outputs)
-                    {
-                        if (output.assetID.SequenceEqual(targetAssetID) && output.scriptHash.Equals(from_script_hash))
-                        {
-                            selected += output.value;
-
-                            var input = new Transaction.Input()
-                            {
-                                prevHash = lastTx.Hash,
-                                prevIndex = index,
-                            };
-
-                            inputs.Add(input);
-
-                            break;
-                        }
-
-                        index++;
-                    }
-                }
-            }
-
-            foreach (var src in sources)
-            {
-                if (selected >= cost && inputs.Count > 0)
-                {
-                    break;
-                }
-
-                selected += src.value;
-
-                var input = new Transaction.Input()
+                inputs.Add(new Transaction.Input()
                 {
                     prevHash = src.hash,
                     prevIndex = src.index,
-                };
+                });
 
-                inputs.Add(input);
-            }
-
-            if (selected < cost)
-            {
-                throw new NeoException($"Not enough {symbol}");
-            }
-
-            if (cost > 0 && targets != null)
-            {
-                foreach (var target in targets)
-                {
-                    var output = new Transaction.Output()
-                    {
-                        assetID = targetAssetID,
-                        scriptHash = target.scriptHash,
-                        value = target.value
-                    };
-                    outputs.Add(output);
-                }
-            }
-
-            if (selected > cost || cost == 0)
-            {
-                var left = selected - cost;
-
-                var change = new Transaction.Output()
+                outputs.Add(new Transaction.Output()
                 {
                     assetID = targetAssetID,
                     scriptHash = from_script_hash,
-                    value = left
-                };
-                outputs.Add(change);
+                    value = selected
+                });
+                return;
             }
+
+            foreach (var target in targets)
+                if (target.scriptHash.Equals(from_script_hash))
+                    throw new NeoException("Target can't be same as input");
+
+            bool done_fee = false;
+            foreach (var asset in info)
+            {
+                string assetName = asset.Key;
+                string assetID = asset.Value;
+
+                if (!unspent.ContainsKey(assetName))
+                    continue;
+
+                var targetAssetID = LuxUtils.ReverseHex(assetID).HexToBytes();
+
+                var thistargets = targets.Where(o => o.assetID.SequenceEqual(targetAssetID));
+
+                decimal cost = -1;
+                foreach (var target in thistargets)
+                    if (target.assetID.SequenceEqual(targetAssetID))
+                    {
+                        if (cost < 0)
+                            cost = 0;
+                        cost += target.value;
+                    }
+
+                // incorporate fee in GAS utxo, if sending GAS
+                bool sendfee = false;
+                if (system_fee > 0 && assetName == "GAS")
+                {
+                    done_fee = true;
+                    sendfee = true;
+                    if (cost < 0)
+                        cost = 0;
+                    cost += system_fee;
+                }
+
+                if (cost == -1)
+                    continue;
+
+                var sources = unspent[assetName].OrderBy(src => src.value);
+                decimal selected = 0;
+
+                // >= cost ou > cost??
+                foreach (var src in sources)
+                {
+                    if (selected >= cost && inputs.Count > 0)
+                        break;
+
+                    selected += src.value;
+                    inputs.Add(new Transaction.Input()
+                    {
+                        prevHash = src.hash,
+                        prevIndex = src.index,
+                    });
+                    // Console.WriteLine("ADD inp " + src.ToString());
+                }
+
+                if (selected < cost)
+                    throw new NeoException($"Not enough {assetName} in address {from_address}");
+
+                if (cost > 0)
+                    foreach (var target in thistargets)
+                        outputs.Add(target);
+
+                if (selected > cost || cost == 0 || sendfee)  /// is sendfee needed? yes if selected == cost
+                    outputs.Add(new Transaction.Output()
+                    {
+                        assetID = targetAssetID,
+                        scriptHash = from_script_hash,
+                        value = selected - cost
+                    });
+            }
+            /*
+                        if (system_fee > 0 && !done_fee && false)
+                        {
+                            var gasID = LuxUtils.ReverseHex(info["GAS"]).HexToBytes();
+                            var gassources = unspent["GAS"];
+                            // foreach (var src in gassources)
+                            //     Console.WriteLine("SRC: " + src.ToString());
+                            decimal feeselected = 0;
+                            foreach (var src in gassources)
+                                if (feeselected <= system_fee)
+                                {
+                                    inputs.Add(new Transaction.Input()
+                                    {
+                                        prevHash = src.hash,
+                                        prevIndex = src.index,
+                                    });
+                                    feeselected += src.value;
+                                    Console.WriteLine("add input  " + feeselected);
+                                    break;
+                                }
+                            outputs.Add(new Transaction.Output()
+                            {
+                                assetID = gasID,
+                                scriptHash = from_script_hash,
+                                value = feeselected - system_fee
+                            });
+                        }
+
+                        foreach (var i in inputs)
+                            Console.WriteLine("INPUT " + i);
+                        foreach (var i in output)
+                            Console.WriteLine("OUTPUT " + i);
+                        // chaining
+                        if (lastTransactions.ContainsKey(from_address))
+                        {
+                            var lastTx = lastTransactions[from_address];
+                            uint index = 0;
+                            if (lastTx.outputs != null)
+                                foreach (var output in lastTx.outputs)
+                                {
+                                    if (output.assetID.SequenceEqual(targetAssetID) && output.scriptHash.Equals(from_script_hash))
+                                    {
+                                        selected += output.value;
+                                        var input = new Transaction.Input()
+                                        {
+                                            prevHash = lastTx.Hash,
+                                            prevIndex = index,
+                                        };
+                                        inputs.Add(input);
+                                        break;
+                                    }
+                                    index++;
+                                }
+                        }
+            */
+
         }
 
         public Transaction CallContract(KeyPair key, UInt160 scriptHash, object[] args, string attachSymbol = null, IEnumerable<Transaction.Output> attachTargets = null)

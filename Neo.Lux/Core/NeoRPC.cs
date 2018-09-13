@@ -53,10 +53,10 @@ namespace Neo.Lux.Core
             }
 
             var jsonRpcData = DataNode.CreateObject(null);
+            jsonRpcData.AddField("jsonrpc", "2.0");
             jsonRpcData.AddField("method", method);
             jsonRpcData.AddNode(paramData);
             jsonRpcData.AddField("id", id);
-            jsonRpcData.AddField("jsonrpc", "2.0");
 
             Logger("QueryRPC: " + method);
             LogData(jsonRpcData);
@@ -151,7 +151,8 @@ namespace Neo.Lux.Core
                 foreach (var entry in unspentNode.Children)
                 {
                     var txid = entry.GetString("txid");
-                    var temp = new UnspentEntry() { hash = new UInt256(LuxUtils.ReverseHex(txid).HexToBytes()), value = entry.GetDecimal("value"), index = entry.GetUInt32("n") };
+                    var val = entry.GetDecimal("value");
+                    var temp = new UnspentEntry() { hash = new UInt256(LuxUtils.ReverseHex(txid).HexToBytes()), value = val, index = entry.GetUInt32("n") };
                     list.Add(temp);
                 }
             }
