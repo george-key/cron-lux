@@ -54,6 +54,7 @@ namespace Neo.Lux.Utils
         {
             using (var  client = new WebClient { Encoding = System.Text.Encoding.UTF8 })
             {
+				client.Headers.Add("Content-Type", "application/json-rpc");
                 return client.DownloadString(url);
             }
         }
@@ -62,6 +63,7 @@ namespace Neo.Lux.Utils
         {
             using (var client = new WebClient { Encoding = System.Text.Encoding.UTF8 })
             {
+				client.Headers.Add("Content-Type", "application/json-rpc");
                 return client.UploadString(url, paramData);
             }
         }
