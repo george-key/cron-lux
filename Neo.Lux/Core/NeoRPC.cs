@@ -357,6 +357,11 @@ namespace Neo.Lux.Core
 
         private string[] nodes;
 
+        public RemoteRPCNode(string neoscanURL, string url) : base(neoscanURL)
+        {
+            nodes = new[] { url };
+        }
+
         public RemoteRPCNode(int port, string neoscanURL, NEONodesKind kind) : base(neoscanURL)
         {
             switch (kind)
