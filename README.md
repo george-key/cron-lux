@@ -300,6 +300,17 @@ else {
 
 After the GAS is claimed it is available and you can use api.WithdrawAsset() to move it to other address.
 			
+# Using with Main net
+
+The recommended way to do it by specifying a list of nodes:
+
+```c#            
+var api = new RemoteRPCNode("http://neoscan.io", "http://seed6.ngd.network:10332", "http://seed.neoeconomy.io:10332");
+```
+
+An update list of active main net nodes can be found here:
+http://monitor.cityofzion.io/
+
 # Credits and License
 
 Created by Sérgio Flores (<http://lunarlabs.pt/>).
