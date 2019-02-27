@@ -187,14 +187,33 @@ namespace Neo.Lux.Core
 
         public bool SendRawTransaction(string hexTx)
         {
-            var response = QueryRPC("sendrawtransaction", new object[] {hexTx }, 12);
+            var response = QueryRPC("sendrawtransaction", new object[] { hexTx });
             if (response == null)
             {
                 throw new Exception("Connection failure");
             }
 
-            var result = response.GetBool("result");
-            return result;
+            try
+            {
+                var temp = response["result"];
+
+                bool result;
+
+                if (temp.HasNode("succeed"))
+                {
+                    result = temp.GetBool("succeed");
+                }
+                else
+                {
+                    result = temp.AsBool();
+                }
+
+                return result;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected override bool SendTransaction(Transaction tx)
