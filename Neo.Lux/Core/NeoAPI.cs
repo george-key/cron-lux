@@ -460,7 +460,7 @@ namespace Neo.Lux.Core
                     if (t.assetID == null)
                         t.assetID = targetAssetID;
             // else  Console.WriteLine("ASSETID target already existed: " + symbol);
-            GenerateInputsOutputs(key, symbol, targets, out inputs, out outputs, system_fee);
+            GenerateInputsOutputs(key, targets, out inputs, out outputs, system_fee);
         }
 
         public void GenerateInputsOutputs(KeyPair key, IEnumerable<Transaction.Output> targets, out List<Transaction.Input> inputs, out List<Transaction.Output> outputs, decimal system_fee = 0)
