@@ -9,12 +9,14 @@
     <Description>Cron lightwallet / blockchain API for C#. Allows you to interact with smart contracts in the CRON blockchain.</Description>
     <PackageProjectUrl>https://github.com/george-key/cron-lux</PackageProjectUrl>
     <RepositoryUrl>https://github.com/george-key/cron-lux</RepositoryUrl>
-    <Version>0.8.2.1</Version>
-    <AssemblyVersion>0.8.2.1</AssemblyVersion>
+    <Version>0.8.2.3</Version>
+    <AssemblyVersion>0.8.2.3</AssemblyVersion>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <FileVersion>0.8.2.1</FileVersion>
+    <FileVersion>0.8.2.3</FileVersion>
     <PackageTags>CRON Emulator dApp Wallet Blockchain Smart Contract</PackageTags>
     <PackageId>CronLux</PackageId>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/george-key/cron-lux/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net461|AnyCPU'">

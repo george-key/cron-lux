@@ -369,10 +369,10 @@ namespace Cron.Lux.Core
             {
                 case CronNodesKind.CRON_GLOBAL:
                     {
-                        nodes = new string[5];
+                        nodes = new string[1];
                         for (int i = 0; i < nodes.Length; i++)
                         {
-                            nodes[i] = $"http://seed{i}.cron.global:{port}";
+                            nodes[i] = $"http://seed{i+1}.cron.global:{port}";
                         }
                         break;
                     }

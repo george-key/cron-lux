@@ -7,7 +7,7 @@
 
 <h1 align="center">CRON Lux</h1>
 <p align="center">
-  CRON light wallet / blockchain API for C#.
+  CRON light wallet and smart contract interaction / blockchain API for C#.
 </p>
 
 ## Contents
@@ -28,9 +28,11 @@
 
 ## Description
 
-**CRON Lux** was developed to provide an easy way to interact with Smart Contracts in the CRON  blockchain using C#. 
+**CRONLux** was developed to provide an easy way to send assets and interact with Smart Contracts in the CRON  blockchain using C#. 
 
-It is not necessary to run a full node, because CRON Lux connects to [Neon DB](https://github.com/CityOfZion/neon-wallet-db), which is the same API used by the [Neon wallet](https://github.com/CityOfZion/neon-wallet/).
+It is not necessary to run a full node, because CRON Lux connects to JSON-RPC node, launched by the command like `dotnet neo-cli --rpc` 
+
+
 
 ## Compatibility
 
@@ -63,7 +65,7 @@ For invoking a Smart Contract, e.g.:
 	var myKeys = new KeyPair(privKey);
 	var scriptHash = "de1a53be359e8be9f3d11627bcca40548a2d5bc1"; // the scriptHash of the smart contract you want to use	
 	// for now, contracts must be in the format Main(string operation, object[] args)
-	var api = NeoDB.ForMainNet();
+	var api = new RemoteRPCNode("http://explorer.cron.global", "http://localhost:10332");
 	var result = api.CallContract(myKeys, scriptHash, "registerMailbox", new object[] { "ABCDE", "demo@phantasma.io" });
 ```
 
@@ -81,7 +83,6 @@ For transfering assets (NEO or GAS), e.g.:
 For getting the balance of an address:
 
 ```c#
-	var api = NeoDB.ForTestNet();
 	var balances = api.GetBalancesOf("AYpY8MKiJ9q5Fpt4EeQQmoYRHxdNHzwWHk");
 	foreach (var entry in balances)
 	{
@@ -131,7 +132,7 @@ A console program is included to demonstrate common features:
 
 A winforms demo is included to showcase how simple is to create a light wallet.
 
-The light wallet demo is able to login into any wallet by inserting a private key in either raw format or WIF format, and also to transfer funds (NEO or GAS) to any address.
+The light wallet demo is able to login into any wallet by inserting a private key in either raw format or WIF format, and also to transfer funds (CRONIUM or CRON) to any address.
 
 Please beware of using this wallet to transfer funds in Neo main net, as this wallet was created just for demonstration purpose and not exhaustively tested.
 
@@ -141,15 +142,15 @@ City of Zion cannot be responsibilized for loss of funds caused by using this li
 
 # Unity Support
 
-NEOLux can be used together with Unity to make games that interact with the NEO blockchain.
-A Unity demo showcasing loading a NEO wallet and querying the balance is included.
+CronLux can be used together with Unity to make games that interact with the CRON blockchain.
+A Unity demo showcasing loading a CRON wallet and querying the balance is included.
 
-Use caution, as most NEOLux methods are blocking calls; in Unity the proper way to call them is using [Coroutines](https://docs.unity3d.com/Manual/Coroutines.html).
+Use caution, as most CronLux methods are blocking calls; in Unity the proper way to call them is using [Coroutines](https://docs.unity3d.com/Manual/Coroutines.html).
 ```c#
     IEnumerator SyncBalance()
     {
         var balances = NeoAPI.GetBalance(NeoAPI.Net.Test, this.keys.address);
-        this.balance = balances["NEO"];
+        this.balance = balances["CRON"];
     }
 	
 	// Then you call the method like this
@@ -168,8 +169,6 @@ You should now be able to hit play and see the demo in action!
 
 If you're still receiving errors in the Console window, you'll want to go to Unity's Build Settings > Player Settings > and set the API compatibility level to .NET 4.6.
 
-![Inputs Screenshot](images/neo_unity.jpg)
-
 # Airdrop / Snapshots
 
 Latest versions of NEOLux have support for doing snapshots of the blockchain. This can be useful for example to find every wallet with a certain token balance at a certain date.
@@ -177,7 +176,7 @@ Running a full local node using neo-cli full synced is extremely recommended whe
 
 The following code extracts all transactions related to a specific NEP5 token.
 ```c#            
-	var api = new LocalRPCNode(10332, "http://neoscan.io");
+	var api = new LocalRPCNode(10332, "http://explorer.cron.global");
 
 	uint startBlock = 2313827;
 	uint endBlock = 2320681;
@@ -245,13 +244,13 @@ if (tx != null) {
 
 # Advanced operations
 
-NEOLux supports some advanced transaction operations specially useful for those doing an ICO in NEO.
+CRONLux supports some advanced transaction operations specially useful for those doing an ICO in CRON.
 
-## Withdrawing NEO from an ICO contract address
+## Withdrawing CRON / NEO from an ICO contract address
 
 After an ICO finishes, it is necessary to withdraw the received funds outside of the contract address. 
 Now the problem is, for smart contracts the private key is not known, since the smart contract address is derived from the hash of it's own code.
-NEOLux provides some methods to do withdrawals from smart contracts. Once the funds are moved to a normal address, you have full access to them.
+CronLux provides some methods to do withdrawals from smart contracts. Once the funds are moved to a normal address, you have full access to them.
 
 ```c#            
 // first read the AVM bytecode from the disk. This AVM must be exactly the same deployed in the main net
@@ -275,7 +274,7 @@ else {
 
 ## Claiming GAS from an ICO contract address
 
-After an ICO finishes, if the sale received tons of NEO but you don't withdraw it right away, then the address will have a large amount of unclaimed GAS.
+After an ICO finishes, if the sale received tons of CRON but you don't withdraw it right away, then the address will have a large amount of unclaimed GAS.
 With NEOLux it is possible to claim it, and later send it to another address using the withdraw method.
 
 ```c#            
@@ -298,24 +297,30 @@ else {
 }
 ```
 
-After the GAS is claimed it is available and you can use api.WithdrawAsset() to move it to other address.
-			
+After the CRON is claimed it is available and you can use api.WithdrawAsset() to move it to other address.			
 # Using with Main net
 
 The recommended way to do it by specifying a list of nodes:
 
 ```c#            
-var api = new RemoteRPCNode("http://neoscan.io", "http://seed6.ngd.network:10332", "http://seed.neoeconomy.io:10332");
+var api = new RemoteRPCNode("http://explorer.cron.global", "http://localhost:10332", ...);
 ```
 
-An update list of active main net nodes can be found here:
-http://monitor.cityofzion.io/
+An update list of active main net nodes to be published.
+
+# TODO:
+
+Lots of tests need to be implemented
 
 # Credits and License
 
+
+
 Created by Sérgio Flores (<http://lunarlabs.pt/>).
 
-Credits also go to the other devs of City Of Zion(<http://cityofzion.io/>), as this project started as a port of code from their [NEON wallet](https://github.com/CityOfZion/neon-wallet) from Javascript to C#.
-Of course, credits also go to the NEO team(<http://neo.org>), as I also used some code from their [NEO source](https://github.com/neo-project/neo).
+Credits also go to the other devs of City Of Zion (<http://cityofzion.io/>), as this project started as a port of code from their [NEON wallet](https://github.com/CityOfZion/neon-wallet) from Javascript to C#.
+Of course, credits also go to the NEO team (<http://neo.org>), as I also used some code from their [NEO source](https://github.com/neo-project/neo).
+
+And now [@george-key](https://github.com/george-key) created this fork 
 
 This project is released under the MIT license, see `LICENSE.md` for more details.
