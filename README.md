@@ -42,17 +42,18 @@ Mono 			| Working
 Xamarin / Mobile 	| Untested
 Unity 			| Working
 
-
 ## Installation
 
-    PM> Install-Package NeoLux
+UPD: don't forget to add package source for our nupkg
+
+    PM> Install-Package CronLux
 
 # Usage
 
 Import the package:
 
 ```c#
-using Neo.Lux;
+using Cron.Lux;
 ```
 
 For invoking a Smart Contract, e.g.:
