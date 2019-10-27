@@ -1,17 +1,19 @@
-﻿using Neo.Lux.Core;
-using Neo.Lux.Utils;
-using Neo.Lux.Cryptography;
+﻿using Cron.Lux.Core;
+using Cron.Lux.Utils;
+using Cron.Lux.Cryptography;
 using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Globalization;
 
-namespace neo_lux_light_wallet
+namespace CronLuxLightWallet
 {
     public partial class WalletForm : Form
     {
         private KeyPair keyPair;
-        private NeoAPI api;
+        private CronAPI api;
 
 
         public WalletForm()
@@ -32,22 +34,22 @@ namespace neo_lux_light_wallet
             dataGridView1.Columns[1].FillWeight = 4;
 
             assetComboBox.Items.Clear();
-            foreach (var symbol in NeoAPI.AssetSymbols)
+            foreach (var symbol in CronAPI.Assets.Select(x => x.Key))
             {
                 assetComboBox.Items.Add(symbol);
             }
-            foreach (var symbol in NeoAPI.TokenSymbols)
+            foreach (var symbol in CronAPI.TokenSymbols)
             {
                 assetComboBox.Items.Add(symbol);
             }
             assetComboBox.SelectedIndex = 0;
 
             withdrawAssetComboBox.Items.Clear();
-            foreach (var symbol in NeoAPI.AssetSymbols)
+            foreach (var symbol in CronAPI.Assets.Select(x => x.Key))
             {
                 withdrawAssetComboBox.Items.Add(symbol);
             }
-            foreach (var symbol in NeoAPI.TokenSymbols)
+            foreach (var symbol in CronAPI.TokenSymbols)
             {
                 withdrawAssetComboBox.Items.Add(symbol);
             }
@@ -87,8 +89,8 @@ namespace neo_lux_light_wallet
             var net = netComboBox.SelectedItem.ToString();
             switch (net)
             {
-                case "Test": api = NeoDB.ForTestNet(); break;
-                case "Main": api = NeoDB.ForMainNet(); break;
+                case "Test": api = CronRPC.ForMainNet(); break;
+                case "Main": api = CronRPC.ForMainNet(); break;
                 default:
                     {
                         MessageBox.Show("Invalid net.");
@@ -121,7 +123,7 @@ namespace neo_lux_light_wallet
             isWalletOpen = true;
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void button2_Click_1(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(toAddressBox.Text))
             {
@@ -131,7 +133,7 @@ namespace neo_lux_light_wallet
 
             var symbol = assetComboBox.SelectedItem.ToString();
 
-            int amount = int.Parse(amountBox.Text);
+            decimal amount = decimal.Parse(amountBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture);
             if (amount<=0)
             {
                 MessageBox.Show("Please insert a valid amount of "+symbol);
@@ -171,7 +173,7 @@ namespace neo_lux_light_wallet
                 return;
             }
 
-            api.WithdrawAsset(keyPair, withdrawFromAddress.Text, symbol, amount);
+            api.WithdrawAsset(keyPair, withdrawFromAddress.Text, symbol, amount, null);
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -207,5 +209,6 @@ namespace neo_lux_light_wallet
                 loadingBar.Value = 0;
             }
         }
+        
     }
 }

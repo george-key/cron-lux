@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Neo.Lux.Cryptography;
-using Neo.Lux.Core;
-using Neo.Lux.Utils;
+using Cron.Lux.Cryptography;
+using Cron.Lux.Core;
+using Cron.Lux.Utils;
 
 namespace Neo.Lux.Airdropper
 {
@@ -26,7 +26,7 @@ namespace Neo.Lux.Airdropper
 
             do
             {
-                Console.Write("Enter whitelist file name or NEO address: ");
+                Console.Write("Enter whitelist file name or CRON address: ");
                 fileName = Console.ReadLine();
 
                 if (!fileName.Contains("."))
@@ -71,7 +71,9 @@ namespace Neo.Lux.Airdropper
 
             }
 
-            var api = new LocalRPCNode(10332, "http://neoscan.io");
+            throw new Exception("TODO:// specify port and url!!!");
+            var api = new RemoteRPCNode(0, null, CronNodesKind.CRON_GLOBAL); 
+            var bi  = new BlockIterator(api);
 
             api.SetLogger(x =>
             {
@@ -101,11 +103,11 @@ namespace Neo.Lux.Airdropper
                 Console.Write("Enter contract script hash or token symbol: ");
                 var temp = Console.ReadLine();
 
-                scriptHash = NeoAPI.GetScriptHashFromSymbol(temp);
+                scriptHash = CronAPI.GetScriptHashFromSymbol(temp);
 
                 if (scriptHash == null && temp.Length == 40)
                 {
-                    scriptHash = NeoAPI.GetScriptHashFromString(temp);
+                    scriptHash = CronAPI.GetScriptHashFromString(temp);
                 }
 
             } while (scriptHash == null);
@@ -201,7 +203,7 @@ namespace Neo.Lux.Airdropper
 
                 Console.WriteLine("Unconfirmed transaction: " + tx.Hash);
 
-                api.WaitForTransaction(keys, tx);
+                api.WaitForTransaction(bi, keys, tx);
 
                 ColorPrint(ConsoleColor.Green, "Confirmed transaction: " + tx.Hash);
                 

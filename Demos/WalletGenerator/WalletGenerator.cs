@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
-using Neo.Lux.Cryptography;
+using Cron.Lux.Cryptography;
 
 namespace WalletGenerator
 {

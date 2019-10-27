@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A3C0D779-4811-4EA7-923A-92F245280D9E}</ProjectGuid>
+    <ProjectGuid>{3AA32DCB-274D-48D4-BDA5-0E80971F3548}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>WhitelistActivator</RootNamespace>
     <AssemblyName>WhitelistActivator</AssemblyName>
@@ -32,8 +32,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\BouncyCastle.NetCore.1.8.5\lib\net20\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="Cron.Lux, Version=0.8.2.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CronLux.0.8.2.1\lib\netstandard2.0\Cron.Lux.dll</HintPath>
+    </Reference>
     <Reference Include="LunarParser, Version=1.0.33.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\LunarParser.1.0.33\lib\net461\LunarParser.dll</HintPath>
+      <HintPath>..\..\packages\LunarParser.1.1.5\lib\net461\LunarParser.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,12 +59,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Neo.Lux\Neo.Lux.csproj">
-      <Project>{30140276-907f-4a1e-a937-823fa1e72f17}</Project>
-      <Name>Neo.Lux</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

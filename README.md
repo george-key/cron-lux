@@ -1,14 +1,13 @@
 <p align="center">
-ad  <img
-    src="http://res.cloudinary.com/vidsy/image/upload/v1503160820/CoZ_Icon_DARKBLUE_200x178px_oq0gxm.png"
+  <img
+    src="http://cronfoundation.org/img/logo_light.svg"
     width="125px"
   >
 </p>
 
-<h1 align="center">NEO Lux</h1>
-
+<h1 align="center">CRON Lux</h1>
 <p align="center">
-  NEO light wallet / blockchain API for C#.
+  CRON light wallet / blockchain API for C#.
 </p>
 
 ## Contents
@@ -29,9 +28,9 @@ ad  <img
 
 ## Description
 
-**NEO Lux** was developed to provide an easy way to interact with Smart Contracts in the NEO blockchain using C#. 
+**CRON Lux** was developed to provide an easy way to interact with Smart Contracts in the CRON  blockchain using C#. 
 
-It is not necessary to run a full node, because NEO Lux connects to [Neon DB](https://github.com/CityOfZion/neon-wallet-db), which is the same API used by the [Neon wallet](https://github.com/CityOfZion/neon-wallet/).
+It is not necessary to run a full node, because CRON Lux connects to [Neon DB](https://github.com/CityOfZion/neon-wallet-db), which is the same API used by the [Neon wallet](https://github.com/CityOfZion/neon-wallet/).
 
 ## Compatibility
 
@@ -91,7 +90,7 @@ For getting the balance of an address:
 
 # NEP5 Token support
 
-Neo-Lux allows to abstract interaction with Neo tokens via the NEP5 C# class.
+CRON Lux allows to abstract interaction with Neo tokens via the NEP5 C# class.
 
 Here's an example of interaction with a NEP5 token:
 
@@ -115,7 +114,7 @@ Look up the script hashes [here](https://neotracker.io/browse/asset/1) or use yo
 	var api = NeoDB.ForMainNet(); 	
 	var redPulse_contractHash = "ecc6b20d3ccac1ee9ef109af5a7cdb85706b1df9";
 	var redPulse_token = new NEP5(api, redPulse_contractHash);
-```	
+```
 
 # Console Demo
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace neo_lux_light_wallet
+namespace CronLuxLightWallet
 {
     static class Program
     {

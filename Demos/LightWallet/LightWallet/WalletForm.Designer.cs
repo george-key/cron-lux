@@ -1,4 +1,4 @@
-﻿namespace neo_lux_light_wallet
+﻿namespace CronLuxLightWallet
 {
     partial class WalletForm
     {
@@ -31,6 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.tabs = new System.Windows.Forms.TabControl();
             this.loginPage = new System.Windows.Forms.TabPage();
+            this.label7 = new System.Windows.Forms.Label();
+            this.netComboBox = new System.Windows.Forms.ComboBox();
             this.warningLb = new System.Windows.Forms.Label();
             this.privateKeyInput = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -55,11 +57,9 @@
             this.label6 = new System.Windows.Forms.Label();
             this.withdrawAmount = new System.Windows.Forms.TextBox();
             this.withdrawAssetComboBox = new System.Windows.Forms.ComboBox();
-            this.netComboBox = new System.Windows.Forms.ComboBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.loadingPage = new System.Windows.Forms.TabPage();
             this.loadingBar = new System.Windows.Forms.ProgressBar();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.tabs.SuspendLayout();
             this.loginPage.SuspendLayout();
             this.balancePage.SuspendLayout();
@@ -97,6 +97,27 @@
             this.loginPage.TabIndex = 0;
             this.loginPage.Text = "Login";
             this.loginPage.UseVisualStyleBackColor = true;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(121, 130);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(24, 13);
+            this.label7.TabIndex = 5;
+            this.label7.Text = "Net";
+            // 
+            // netComboBox
+            // 
+            this.netComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.netComboBox.FormattingEnabled = true;
+            this.netComboBox.Items.AddRange(new object[] {
+            "Test",
+            "Main"});
+            this.netComboBox.Location = new System.Drawing.Point(151, 130);
+            this.netComboBox.Name = "netComboBox";
+            this.netComboBox.Size = new System.Drawing.Size(121, 21);
+            this.netComboBox.TabIndex = 4;
             // 
             // warningLb
             // 
@@ -181,6 +202,7 @@
             this.button2.TabIndex = 16;
             this.button2.Text = "Send";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // label3
             // 
@@ -328,31 +350,6 @@
             this.withdrawAssetComboBox.Size = new System.Drawing.Size(100, 21);
             this.withdrawAssetComboBox.TabIndex = 9;
             // 
-            // netComboBox
-            // 
-            this.netComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.netComboBox.FormattingEnabled = true;
-            this.netComboBox.Items.AddRange(new object[] {
-            "Test",
-            "Main"});
-            this.netComboBox.Location = new System.Drawing.Point(151, 130);
-            this.netComboBox.Name = "netComboBox";
-            this.netComboBox.Size = new System.Drawing.Size(121, 21);
-            this.netComboBox.TabIndex = 4;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(121, 130);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(24, 13);
-            this.label7.TabIndex = 5;
-            this.label7.Text = "Net";
-            // 
-            // timer1
-            // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // loadingPage
             // 
             this.loadingPage.Controls.Add(this.loadingBar);
@@ -371,6 +368,10 @@
             this.loadingBar.Size = new System.Drawing.Size(365, 23);
             this.loadingBar.TabIndex = 0;
             // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // WalletForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -381,7 +382,7 @@
             this.Name = "WalletForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Neo Light Wallet Example";
+            this.Text = "CRON Light Wallet Example";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabs.ResumeLayout(false);
             this.loginPage.ResumeLayout(false);

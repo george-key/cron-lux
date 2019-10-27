@@ -1,6 +1,6 @@
 ﻿using System;
-using Neo.Lux.Cryptography;
-using Neo.Lux.Utils;
+using Cron.Lux.Cryptography;
+using Cron.Lux.Utils;
 
 namespace AddressFromWIF
 {

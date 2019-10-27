@@ -1,11 +1,11 @@
-﻿using LunarParser;
-using LunarParser.JSON;
-using LunarParser.XML;
-using Neo.Lux.Core;
-using Neo.Lux.Cryptography;
-using Neo.Lux.Debugger;
-using Neo.Lux.Utils;
-using Neo.Lux.VM;
+﻿using LunarLabs;
+using LunarLabs.Parser.JSON;
+using LunarLabs.Parser.XML;
+using Cron.Lux.Core;
+using Cron.Lux.Cryptography;
+using Cron.Lux.Debugger;
+using Cron.Lux.Utils;
+using Cron.Lux.VM;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,8 +19,7 @@ namespace DemoSnapshot
         static void Main(string[] pargs)
         {
 
-            //var api = new LocalRPCNode(10332, "http://neoscan.io");
-            var api = new RemoteRPCNode(10332, "http://neoscan.io");
+             var api = new RemoteRPCNode(10332, "<cron node url>", CronNodesKind.CRON_GLOBAL);
 
             {
                 Console.WriteLine("amount "+ new BigInteger("00943577".HexToBytes()));
@@ -43,7 +42,7 @@ namespace DemoSnapshot
                 uint ico_start_time = 1527379200;
 
                 Console.WriteLine("Block,Stage,Tx Hash,Address,Action,NEO sent,NEO refund");
-                snap.Execute(soul_token, avm_script, vm =>
+                snap.Execute(api, soul_token.ScriptHash, vm =>
                 {
                     var storage = vm.GetStorage(soul_token);
                     var block = vm.currentBlock;
@@ -205,7 +204,7 @@ namespace DemoSnapshot
                     List<AVMInstruction> ops;
                     try
                     {
-                        ops = NeoTools.Disassemble(tx.script);
+                        ops = CronTools.Disassemble(tx.script);
                     }
                     catch
                     {
@@ -227,8 +226,8 @@ namespace DemoSnapshot
                             engine.LoadScript(tx.script);
                             engine.Execute(null);
 
-                            var operation = engine.EvaluationStack.Peek().GetString();
-                            var args = ((IEnumerable<StackItem>) engine.EvaluationStack.Peek(1)).ToList();
+                            var operation = engine.CurrentContext.EvaluationStack.Peek().GetString();
+                            var args = ((IEnumerable<StackItem>) engine.CurrentContext.EvaluationStack.Peek(1)).ToList();
 
                             var witnesses = new HashSet<UInt160>();
                             foreach (var input in tx.inputs)

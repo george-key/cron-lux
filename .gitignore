@@ -17,3 +17,4 @@ Demos/*/obj/
 Demos/NeoUnity/Library/
 Demos/NeoUnity/Temp/
 Demos/NeoUnity/UnityPackageManager/
+/Demos/CronSender/CronSender/NeoSender.csproj.user

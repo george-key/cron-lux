@@ -1,12 +1,10 @@
-﻿using Neo.Lux.Cryptography;
-using Neo.Lux.Debugger;
-using Neo.Lux.Utils;
+﻿using Cron.Lux.Cryptography;
+using Cron.Lux.Debugger;
+using Cron.Lux.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleDebugger
 {
@@ -17,12 +15,12 @@ namespace ConsoleDebugger
         public byte[] script;
 
         public AVMInstruction[] instructions;
-        public NeoMapFile map;
+        public CronMapFile map;
 
         public Contract(byte[] script)
         {
             this.script = script;
-            this.instructions = NeoTools.Disassemble(script).ToArray();
+            this.instructions = CronTools.Disassemble(script).ToArray();
             this.scriptHash = script.ToScriptHash();
         }
 
@@ -31,7 +29,7 @@ namespace ConsoleDebugger
             var debugFile = fileName.Replace(".avm", ".debug.json");
             if (File.Exists(debugFile))
             {
-                this.map = new NeoMapFile();
+                this.map = new CronMapFile();
                 this.map.LoadFromFile(debugFile);
                 return true;
             }
@@ -40,7 +38,7 @@ namespace ConsoleDebugger
         }
     }
 
-    class ConsoleServer : DebugServer
+    class ConsoleServer : DebuggerServer
     {
         private Dictionary<UInt160, Contract> contracts = new Dictionary<UInt160, Contract>();
 

@@ -5,9 +5,9 @@
  * This can be used for example for implementing a payment system.
  */
 
-using Neo.Lux.Core;
-using Neo.Lux.Cryptography;
-using Neo.Lux.Utils;
+using Cron.Lux.Core;
+using Cron.Lux.Cryptography;
+using Cron.Lux.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +23,15 @@ namespace NeoBlocks
 
             do
             {
-                Console.WriteLine("Write an NEO address to listen:");
+                Console.WriteLine("Write an CRON address to listen:");
                 address = Console.ReadLine();
             } while (!address.IsValidAddress());
-                       
-            var api = NeoRPC.ForTestNet();
+
+            int  cronPort = 0;
+            string  cronURL = null;
+
+
+            var api = new RemoteRPCNode(cronPort, cronURL, CronNodesKind.CRON_GLOBAL);
 
             var oldBlockCount = api.GetBlockHeight();
 
@@ -66,7 +70,7 @@ namespace NeoBlocks
                         {
                             if (output.scriptHash.Equals(targetScriptHash))
                             {
-                                var asset = NeoAPI.SymbolFromAssetID(output.assetID);
+                                var asset = CronAPI.SymbolFromAssetID(output.assetID);
 
                                 if (amounts.ContainsKey(asset))
                                 {

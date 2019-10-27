@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Neo.Lux.Cryptography;
-using Neo.Lux.Core;
-using Neo.Lux.Utils;
+using Cron.Lux.Cryptography;
+using Cron.Lux.Core;
+using Cron.Lux.Utils;
 
 namespace Neo.Lux.Airdropper
 {
@@ -79,8 +79,9 @@ namespace Neo.Lux.Airdropper
             int done = 0;
 
             //var api = NeoDB.ForMainNet();            
-            var api = new RemoteRPCNode(10332, "http://neoscan.io");
+            var api = new RemoteRPCNode(10332, "http://neoscan.io", CronNodesKind.CRON_GLOBAL);
             //var api = new CustomRPCNode();
+            var bi = new BlockIterator(api);
 
             api.SetLogger(x =>
             {
@@ -110,11 +111,11 @@ namespace Neo.Lux.Airdropper
                 Console.Write("Enter contract script hash or token symbol: ");
                 var temp = Console.ReadLine();
 
-                scriptHash = NeoAPI.GetScriptHashFromSymbol(temp);
+                scriptHash = CronAPI.GetScriptHashFromSymbol(temp);
 
                 if (scriptHash == null && temp.Length == 40)
                 {
-                    scriptHash = NeoAPI.GetScriptHashFromString(temp);
+                    scriptHash = CronAPI.GetScriptHashFromString(temp);
                 }
 
             } while (scriptHash == null);
@@ -210,7 +211,7 @@ namespace Neo.Lux.Airdropper
 
                 Console.WriteLine("Unconfirmed transaction: " + tx.Hash);
 
-                api.WaitForTransaction(keys, tx);
+                api.WaitForTransaction(bi, keys, tx);
 
                 ColorPrint(ConsoleColor.Green, "Confirmed transaction: " + tx.Hash);
 

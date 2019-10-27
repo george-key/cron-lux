@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>CronLux</id>
+    <version>0.4.1</version>
+    <title>Cron.Lux</title>
+    <authors>Sérgio Flores, George K.</authors>
+    <owners>George K.</owners>
+    <projectUrl>https://github.com/george-key/cron-lux</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>CRON lightwallet / blockchain API for C#. Allows you to interact with smart contracts in the CRON blockchain.</description>
+    <copyright>Copyright 2019</copyright>
+    <tags>NEO Emulator dApp Wallet Blockchain Smart Contract</tags>
+  </metadata>
+</package>
