@@ -35,8 +35,8 @@
     <Reference Include="BouncyCastle.Crypto, Version=1.8.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BouncyCastle.NetCore.1.8.5\lib\net20\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="Cron.Lux, Version=0.8.2.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CronLux.0.8.2.1\lib\netstandard2.0\Cron.Lux.dll</HintPath>
+    <Reference Include="Cron.Lux, Version=0.8.2.3, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CronLux.0.8.2.3\lib\netstandard2.0\Cron.Lux.dll</HintPath>
     </Reference>
     <Reference Include="LunarParser, Version=1.1.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\LunarParser.1.1.5\lib\net461\LunarParser.dll</HintPath>
