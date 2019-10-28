@@ -10,6 +10,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>CRON lightwallet / blockchain API for C#. Allows you to interact with smart contracts in the CRON blockchain.</description>
     <copyright>Copyright 2019</copyright>
-    <tags>NEO Emulator dApp Wallet Blockchain Smart Contract</tags>
+    <tags>CRON CRYPTOCEAN Emulator dApp Wallet Blockchain Smart Contract</tags>
   </metadata>
 </package>
