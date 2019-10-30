@@ -1,7 +1,7 @@
 
 # Что такое Cron-lux?
 
-Это .NET-клиент для JSON-RPC- ноды блокчейна [CRYPTOCEAN / cronfoundation.org](http://cronfoundation.org) (см. также [CRON](http://cron.global) и [explorer.cron.global](http://explorer.cron.global) ), который позволяет работать с блокчейном CRON без установки ноды и без передачи приватных ключей по JSON-RPC, как это сделано ранее в [плагине](https://github.com/cronfoundation/neo-plugins/tree/master/RpcSystemAssetTracker).
+Это .NET-клиент для JSON-RPC- ноды блокчейна [CRYPTOCEAN / cronfoundation.org](http://cronfoundation.org) (см. также [tracker.cron.global](http://tracker.cron.global) и [explorer.cron.global](http://explorer.cron.global) ), который позволяет работать с блокчейном CRON без установки ноды и без передачи приватных ключей по JSON-RPC, как это сделано ранее в [плагине](https://github.com/cronfoundation/neo-plugins/tree/master/RpcSystemAssetTracker).
 
 Cron-lux подписывает транзакцию на своей стороне.
 Чтобы подписать транзакцию, ему необходима информация об UTxO - Unspent Tx (Transactions) Output
